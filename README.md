@@ -1,18 +1,27 @@
 <div align="center">
 
-<img src="./public/logo.jpeg" alt="3Dot Creatives Logo" width="130" height="130" style="border-radius: 50%; box-shadow: 0 10px 40px rgba(185, 130, 69, 0.45); border: 2px solid rgba(185, 130, 69, 0.5);" />
+<img src="./public/logo.png" alt="3Dot Creatives Logo" width="140" />
 
-# 3DOT CREATIVES POS & RESTAURANT ECOSYSTEM
+# ✦ 3DOT CREATIVES POS & RESTAURANT ECOSYSTEM ✦
 
-### *A High-End Creative Studio POS, Inventory & Restaurant Suite*
+### *A Luxury Creative Studio POS, Inventory & Restaurant Suite*
 
-[![Next.js 15](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React 19](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Electron](https://img.shields.io/badge/Desktop-Electron-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-emerald?style=for-the-badge)](#)
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15.5-0E100C?style=for-the-badge&logo=next.js&logoColor=F4EBDD&labelColor=303522" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-0E100C?style=for-the-badge&logo=react&logoColor=F4EBDD&labelColor=303522" alt="React 19" />
+  <img src="https://img.shields.io/badge/Tailwind-v4-0E100C?style=for-the-badge&logo=tailwindcss&logoColor=F4EBDD&labelColor=303522" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Desktop-Electron-0E100C?style=for-the-badge&logo=electron&logoColor=F4EBDD&labelColor=303522" alt="Electron" />
+  <img src="https://img.shields.io/badge/Build-Passing-B98245?style=for-the-badge&logo=checkmarx&logoColor=F4EBDD&labelColor=59613B" alt="Status" />
+</p>
 
-[Live Demo & Portal](https://3dotcreatives.agency) • [Key Features](#-key-features) • [Design System](#-studio-brand-identity) • [Role Portals](#-role-based-portals) • [Quick Start](#-quick-start)
+<p align="center">
+  <a href="#-the-vision"><b>The Vision</b></a> •
+  <a href="#-studio-brand-identity"><b>Brand Identity</b></a> •
+  <a href="#-core-architecture--role-portals"><b>Role Portals</b></a> •
+  <a href="#-key-features"><b>Key Features</b></a> •
+  <a href="#-demo-credentials"><b>Credentials</b></a> •
+  <a href="#-quick-start"><b>Quick Start</b></a>
+</p>
 
 ---
 
@@ -20,157 +29,120 @@
 
 ## ✦ The Vision
 
-Engineered for **3Dot Creatives**, this POS ecosystem is conceived not as a generic utility, but as a **luxury studio-grade management suite**. Blending liquid-glass aesthetics, dynamic easing micro-interactions, and high-frequency operational speed, it caters to high-volume restaurants, bistros, and creative studios.
+Engineered for **3Dot Creatives** ([3dotcreatives.agency](https://3dotcreatives.agency)), this ecosystem transcends utilitarian POS software by delivering an **editorial, studio-grade restaurant and retail suite**. It bridges liquid frosted glass ergonomics, dynamic count-up physics, and split-second keyboard-driven ordering for modern hospitality spaces.
 
 ---
 
-## 🎨 Studio Brand Identity & Aesthetic
+## 🎨 Studio Brand Identity & Palette
 
-The interface is built strictly around the **3dotcreatives Studio Design System**, harmonizing a warm editorial feel with dark cinematic realism:
+Crafted in alignment with the official **3dotcreatives Studio Design System** — balancing high-contrast dark cinematic ambiance with warm editorial craftsmanship:
 
-| Role | Color Name | Hex Code | Visual Application |
-| :--- | :--- | :--- | :--- |
-| **60% Primary Light** | Warm Cream | `#F4EBDD` | Headings, hero labels, prime typography |
-| **Secondary Surface** | Soft Beige | `#D8C3A5` | Subtle text, borders, glass reflections |
-| **30% Brand Accent** | Olive Green | `#59613B` | Structural buttons, status pills, tags |
-| **10% Premium Accent** | Rusty Gold | `#B98245` | Focus rings, key actions, glowing accents |
-| **Typography Base** | Dark Olive | `#303522` | Deep contrast, dark section badges |
-| **Dark Cinematic Mode** | Midnight Black | `#0E100C` | Frosted liquid-glass canvas, deep background |
+| Proportion | Swatch | Color Name | Hex Code | Purpose & Application |
+| :---: | :---: | :--- | :---: | :--- |
+| **60%** | `●` | **Warm Cream** | `#F4EBDD` | Headings, hero labels, primary readable typography |
+| **Supporting** | `●` | **Soft Beige** | `#D8C3A5` | Secondary text, subtle borders, muted badges |
+| **30%** | `●` | **Olive Green** | `#59613B` | Structural buttons, status pills, category pills |
+| **10%** | `●` | **Rusty Gold** | `#B98245` | High-impact callouts, focus rings, glowing accents |
+| **Contrast** | `●` | **Dark Olive** | `#303522` | Cards, pill containers, deep contrasting surfaces |
+| **Canvas** | `●` | **Midnight Black** | `#0E100C` | Frosted liquid-glass canvas, deep cinematic backdrop |
 
 ### ✒️ Editorial Typography Trio
-- **Headings**: *Cormorant Garamond* — Refined, timeless, sophisticated serif
-- **Body & Controls**: *Plus Jakarta Sans* — Ergonomic, ultra-legible modern geometric sans
-- **Metrics & Hotkeys**: *JetBrains Mono* — Tabular numbers with smooth count-up physics
+- **Headings**: *Cormorant Garamond* — Refined, timeless editorial elegance
+- **Body & Controls**: *Plus Jakarta Sans* — High-legibility modern geometric sans
+- **Metrics & Hotkeys**: *JetBrains Mono* — Monospaced tabular digits with easing physics
+
+---
+
+## 🏛️ Core Architecture & Role Portals
+
+| Portal | Primary Route | Target Operator | Core Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **🛡️ Admin HQ** | `/admin/dashboard` | Owners / General Managers | Real-time sales ledger, recipe yield costing, purchase billing, multi-cashier shift variance audits, analytical reports |
+| **⚡ Cashier Desk** | `/cashier/pos` | Front Counter Cashiers | High-speed barcode scan, `F1-F12` hotkeys, held orders, split payments, cash drawer float tracking |
+| **🍳 Kitchen KDS** | `/kitchen/dashboard` | Head Chefs & Line Cooks | Real-time live KOT queue, order timers with alert badges, audio chimes, and station dispatch |
+| **🍽️ Waiter Floor** | `/waiter/dashboard` | Floor Servers & Captains | Interactive table layout, digital order pads, guest billing statuses |
+| **🛵 Rider Fleet** | `/rider/dashboard` | Delivery Fleet Riders | Dispatch queue, GPS delivery verification, one-touch customer WhatsApp updates |
 
 ---
 
 ## ✨ Key Features
 
-- **Liquid-Glass Floating Navigation**: Persistent, frosted-glass sidebar with multi-depth ambient lighting reflections, spring animations, and automatic role-based navigation filtering.
-- **Cinematic Startup Experience**: Interactive orbital splash screen with continuous `1% → 100%` liquid progress bar and smooth cross-fade into authentication.
-- **Live Incremental Metrics**: Zero-abrupt jumps — numbers count up gracefully from 1 to their actual value with exponential easing (`easeOutExpo`).
-- **Offline-First & Lightning Hotkeys**: Full keyboard-only terminal workflow (`F1` Sale, `F3` Stock, `F8` Shift Drawer, `Alt+P` Product, `Alt+C` Barcode, `Alt+E` Pay).
-- **Split-Role Security Isolation**: Cashier operators enjoy a clutter-free, dedicated POS desk while Admin management suite holds full financial, procurement, and inventory control.
-- **Cross-Platform Readiness**: Runs natively on modern browsers and packages as an ultra-fast local desktop executable via Electron.
-
----
-
-## 🏛️ Role-Based Portals
-
-```mermaid
-graph TD
-    A[3Dot Creatives Unified Portal] --> B[Cashier Desk /cashier/pos]
-    A --> C[Admin HQ /admin/dashboard]
-    A --> D[Kitchen Display /kitchen/dashboard]
-    A --> E[Floor Service /waiter/dashboard]
-    A --> F[Rider Dispatch /rider/dashboard]
-
-    B --> B1[Instant Barcode Scan]
-    B --> B2[F1-F12 Hotkey Terminal]
-    B --> B3[Shift Balance & Drawer Audit]
-
-    C --> C1[Financial P&L Ledger]
-    C --> C2[Recipe Stock Costing]
-    C --> C3[Supply Purchase Orders]
-```
-
-### 1. 🛡️ Admin Management Suite (`/admin/dashboard`)
-- **Floor & Service Hub**: Live revenue charts, tables & dining floor status, multi-cashier shift variance ledger.
-- **Kitchen & Recipes Hub**: Raw ingredient stock tracking, recipe yield costing, unit conversions.
-- **Supply & Procurement Hub**: Supplier accounts, purchase bills, return vouchers, inventory aging.
-- **Financial HQ**: Income statements, operating overheads, customer credit ledgers, multi-role staff access control.
-
-### 2. ⚡ Cashier Front Counter (`/cashier/pos`)
-- High-speed product catalog with category pills, image previews, and barcode reader integration.
-- Split payment modes (Cash, Credit Card, Bank Transfer, Split Bills).
-- Customer ledger linking (Walk-In, Phone search, quick account creation).
-- Cash float drawer audit with real-time shortage and surplus flags.
-
-### 3. 🍳 Kitchen Display System (`/kitchen/dashboard`)
-- Real-time KOT tickets categorized by table number, order type, and preparation timer.
-- Dynamic color alerts for delayed tickets and instant sound chimes.
-
-### 4. 🍽️ Waiter Floor Mobile App (`/waiter/dashboard`)
-- Table floor map with status (Vacant, Dining, Billed).
-- Mobile order drafting directly at the dining table.
-
-### 5. 🛵 Rider Dispatch Queue (`/rider/dashboard`)
-- Direct order assignment, status progression, and one-tap customer WhatsApp updates.
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- **Node.js** 18.18+ or 20+
-- **npm** or **pnpm**
-
-### Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/3dotcreatives/pos-suite.git
-   cd 3dotpos
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment**:
-   ```bash
-   cp .env.example .env.local
-   ```
-
-4. **Launch the Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to view the application.
-
----
-
-## 🖥️ Desktop App (Electron)
-
-Launch or package the native Windows / macOS desktop application:
-
-```bash
-# Run local desktop application with hot-reload
-npm run desktop:dev
-
-# Build distributable production executable (.exe)
-npm run desktop:dist
-```
+- **Liquid-Glass Sidebar**: Frosted-glass navigation with role-aware smart filtering (cashiers see only their desk; admins see all management hubs).
+- **1-to-100 Cinematic Splash Loader**: Visual linear progress indicator counting smoothly from `1% → 100%` before transitioning into the workspace.
+- **Dynamic Easing Count-Up Metrics**: Numbers count up on load (`requestAnimationFrame` with `easeOutExpo`) instead of abruptly popping in.
+- **Hotkey-Accelerated POS**:
+  - `F1` Express Sale Terminal
+  - `F3` Quick Stock Look-up
+  - `F8` Cash Shift & Drawer Balance
+  - `Alt + P` Product Search
+  - `Alt + C` Barcode Focus
+  - `Alt + E` Complete Payment & Print
+- **Zero-Friction Shifts & Audit**: Shift drawer balances with automated surplus/shortage detection (`-Rs. 50 (Short)` audit pills).
+- **Desktop Ready (Electron)**: Ships both as a responsive PWA and an offline-first Windows/macOS desktop application.
 
 ---
 
 ## 🔐 Demo Credentials
 
-Quickly test the segregated role workflows:
+Experience each role's dedicated environment:
 
-| Role | Email | Password | Allowed Access |
+| Account | Email | Password | Allowed Capabilities |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@3dotcreatives` | `admin123` | Full access to all 4 management suites & reports |
-| **Cashier** | `cashier@3dotcreatives` | `cashier123` | POS Register, Order Queue, Shifts, Receipts |
+| **Admin** | `admin@3dotcreatives` | `admin123` | Full access across all 4 hubs, financials, recipes, & settings |
+| **Cashier** | `cashier@3dotcreatives` | `cashier123` | Streamlined access: POS Register, Orders Queue, Shifts & Drawer |
 
 ---
 
-## 🛠️ Tech Stack Architecture
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- **Node.js** 18.18+ or 20+
+- **npm** or **pnpm**
+
+### 2. Setup & Installation
+```bash
+# Clone the repository
+git clone https://github.com/Muhammad-Saad28/3dotcreativespos.git
+cd 3dotcreativespos
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) to view the application.
+
+---
+
+## 🖥️ Desktop Application (Electron)
+
+```bash
+# Run local desktop application with hot reload
+npm run desktop:dev
+
+# Package Windows/macOS production installer (.exe)
+npm run desktop:dist
+```
+
+---
+
+## 🛠️ Technology Stack
 
 - **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
-- **Frontend Engine**: [React 19](https://react.dev/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) with Custom Frosted Glass System
-- **Desktop Wrapper**: [Electron 34](https://www.electronjs.org/)
+- **UI Architecture**: [React 19](https://react.dev/)
+- **Design Tokens**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Desktop Runtime**: [Electron 34](https://www.electronjs.org/)
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Visual Analytics**: [Recharts](https://recharts.org/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Visual Charts**: [Recharts](https://recharts.org/)
+- **Micro-interactions**: [Framer Motion](https://www.framer.com/motion/)
 
 ---
 
 <div align="center">
 
-Crafted with precision for **3Dot Creatives Agency**  
+Crafted with care for **3Dot Creatives Agency**  
 *Sophisticated • Artistic • Confident • Minimal • Timeless*
 
 </div>
