@@ -1,443 +1,487 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { 
   getPOSOrders, 
-  getPOSTables, 
   getPOSInventory, 
-  updateOrderStatus, 
   POSOrder, 
-  POSTable, 
-  POSInventoryItem 
+  POSInventoryItem,
+  formatOrderNumber 
 } from "@/lib/pos-data";
-import { DollarSign, ShoppingBag, Utensils, AlertTriangle, CheckCircle, XCircle, ArrowUpRight, Clock, TrendingUp, TrendingDown, Calendar, CalendarDays } from "lucide-react";
+import {
+  getPOSCustomers,
+  getPOSVendors,
+  getPOSPurchases,
+  getPOSSaleReturns,
+  getPOSPurchaseReturns,
+  POSCustomer,
+  POSVendor,
+  POSPurchase,
+  POSSaleReturn,
+  POSPurchaseReturn
+} from "@/lib/pos-v2-data";
+import { 
+  DollarSign, 
+  ShoppingBag, 
+  AlertTriangle, 
+  Calendar, 
+  TrendingUp, 
+  TrendingDown, 
+  Users, 
+  Truck, 
+  Receipt, 
+  RotateCcw, 
+  ArrowUpRight, 
+  RefreshCw,
+  Search,
+  CheckCircle2,
+  Package
+} from "lucide-react";
 import Link from "next/link";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Cell, Tooltip } from "recharts";
-
-// Mock Data for Charts
-const revenueData = [
-  { name: 'Mon', revenue: 12500 },
-  { name: 'Tue', revenue: 15200 },
-  { name: 'Wed', revenue: 11800 },
-  { name: 'Thu', revenue: 18400 },
-  { name: 'Fri', revenue: 24500 },
-  { name: 'Sat', revenue: 32000 },
-  { name: 'Sun', revenue: 28900 },
-];
-
-const popularItemsData = [
-  { name: 'Smash Burger', sales: 145 },
-  { name: 'Fried Chicken', sales: 112 },
-  { name: 'Pepperoni Pizza', sales: 85 },
-  { name: 'Loaded Fries', sales: 64 },
-];
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-lg shadow-xl shadow-black/50">
-        <p className="text-zinc-400 text-xs mb-1 font-semibold">{label}</p>
-        <p className="text-orange-500 font-black text-sm">
-          Rs. {payload[0].value.toLocaleString()}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const CustomBarTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-lg shadow-xl shadow-black/50">
-        <p className="text-zinc-400 text-xs mb-1 font-semibold">{label}</p>
-        <p className="text-white font-black text-sm">
-          {payload[0].value} Sales
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 
 export default function AdminDashboardPage() {
   const [orders, setOrders] = useState<POSOrder[]>([]);
-  const [tables, setTables] = useState<POSTable[]>([]);
   const [inventory, setInventory] = useState<POSInventoryItem[]>([]);
+  const [customers, setCustomers] = useState<POSCustomer[]>([]);
+  const [vendors, setVendors] = useState<POSVendor[]>([]);
+  const [purchases, setPurchases] = useState<POSPurchase[]>([]);
+  const [saleReturns, setSaleReturns] = useState<POSSaleReturn[]>([]);
+  const [purchaseReturns, setPurchaseReturns] = useState<POSPurchaseReturn[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Reject Modal State
-  const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
+  // Date filters
+  const todayStr = new Date().toISOString().split("T")[0];
+  const [startDate, setStartDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState<string>(todayStr);
 
-  const refreshData = async () => {
-    const [fetchedOrders, fetchedTables, fetchedInv] = await Promise.all([
+  const loadAllData = async () => {
+    setIsLoading(true);
+    const [fetchedOrders, fetchedInv, fetchedCust, fetchedVend, fetchedPurch, fetchedSRet, fetchedPRet] = await Promise.all([
       getPOSOrders(),
-      getPOSTables(),
       getPOSInventory(),
+      getPOSCustomers(),
+      getPOSVendors(),
+      getPOSPurchases(),
+      getPOSSaleReturns(),
+      getPOSPurchaseReturns(),
     ]);
+
     setOrders(fetchedOrders);
-    setTables(fetchedTables);
     setInventory(fetchedInv);
+    setCustomers(fetchedCust);
+    setVendors(fetchedVend);
+    setPurchases(fetchedPurch);
+    setSaleReturns(fetchedSRet);
+    setPurchaseReturns(fetchedPRet);
     setIsLoading(false);
   };
 
   useEffect(() => {
-    refreshData();
-    const interval = setInterval(refreshData, 5000);
-    return () => clearInterval(interval);
+    loadAllData();
   }, []);
 
-  const handleAcceptOrder = async (id: string) => {
-    await updateOrderStatus(id, "accepted");
-    await refreshData();
-  };
+  // Filtered calculations based on Date Range
+  const filteredOrders = useMemo(() => {
+    return orders.filter(o => {
+      const orderDate = (o.created_at || "").split("T")[0];
+      if (startDate && orderDate < startDate) return false;
+      if (endDate && orderDate > endDate) return false;
+      return true;
+    });
+  }, [orders, startDate, endDate]);
 
-  const handleConfirmReject = async () => {
-    if (!rejectingOrderId) return;
-    await updateOrderStatus(rejectingOrderId, "rejected", rejectReason || "Item unavailable");
-    setRejectingOrderId(null);
-    setRejectReason("");
-    await refreshData();
-  };
+  const filteredPurchases = useMemo(() => {
+    return purchases.filter(p => {
+      const pDate = p.purchase_date;
+      if (startDate && pDate < startDate) return false;
+      if (endDate && pDate > endDate) return false;
+      return true;
+    });
+  }, [purchases, startDate, endDate]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-8 pb-8 animate-in fade-in duration-500">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-zinc-800 rounded-md animate-pulse" />
-            <div className="h-4 w-48 bg-zinc-800/50 rounded-md animate-pulse" />
-          </div>
-          <div className="h-10 w-48 bg-zinc-800 rounded-md animate-pulse" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-zinc-900 rounded-xl border border-zinc-800 p-5 flex flex-col justify-between">
-              <div className="flex justify-between">
-                <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse" />
-                <div className="h-8 w-8 bg-zinc-800 rounded-xl animate-pulse" />
-              </div>
-              <div className="h-8 w-32 bg-zinc-800 rounded-md animate-pulse" />
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-80 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" />
-          <div className="h-80 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" />
-        </div>
-      </div>
-    );
-  }
+  const filteredSaleReturns = useMemo(() => {
+    return saleReturns.filter(r => {
+      const rDate = r.return_date;
+      if (startDate && rDate < startDate) return false;
+      if (endDate && rDate > endDate) return false;
+      return true;
+    });
+  }, [saleReturns, startDate, endDate]);
 
-  // Calculate Metrics
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-
-  const validOrders = orders.filter(
-    o => o.status !== "cancelled" && o.status !== "rejected"
-  );
-
-  const todayRevenue = orders
-    .filter(o => o.status === "completed" || o.status === "served" || o.status === "ready" || o.status === "preparing" || o.status === "accepted")
-    .reduce((sum, o) => sum + o.total, 0);
-
-  const thisMonthRevenue = validOrders
-    .filter(o => {
-      const d = new Date(o.created_at);
-      return !isNaN(d.getTime()) && d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-    })
+  // Key Figures
+  const totalSalesAmount = filteredOrders
+    .filter(o => o.status !== "cancelled" && o.status !== "rejected")
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
-  const thisYearRevenue = validOrders
-    .filter(o => {
-      const d = new Date(o.created_at);
-      return !isNaN(d.getTime()) && d.getFullYear() === currentYear;
-    })
-    .reduce((sum, o) => sum + (o.total || 0), 0);
+  const totalPurchaseAmount = filteredPurchases.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+  const salesReturnAmount = filteredSaleReturns.reduce((sum, r) => sum + (r.total_refund_amount || 0), 0);
 
-  const activeOrdersCount = orders.filter(o => o.status !== "completed" && o.status !== "cancelled" && o.status !== "rejected").length;
-  const pendingOrders = orders.filter(o => o.status === "pending");
-  const occupiedTables = tables.filter(t => t.status === "occupied").length;
-  const lowStockItems = inventory.filter(i => i.status === "low" || i.status === "critical");
+  const visitedCustomerCount = customers.reduce((sum, c) => sum + (c.visited_count || 1), 0);
+  const customerOutstandingBalance = customers.reduce((sum, c) => sum + (c.balance || 0), 0);
+  const customerPaymentsCollected = customers.reduce((sum, c) => sum + (c.payments_collected || 0), 0);
+
+  const vendorOutstandingBalance = vendors.reduce((sum, v) => sum + (v.balance || 0), 0);
+  const vendorPaymentsCollected = vendors.reduce((sum, v) => sum + (v.payments_collected || 0), 0);
+
+  // Top Selling Products Aggregation
+  const topSelling = useMemo(() => {
+    const itemCounts: Record<string, { name: string; count: number; revenue: number }> = {};
+    filteredOrders.forEach(order => {
+      order.items?.forEach(item => {
+        const key = item.menu_item_name || "Special Item";
+        if (!itemCounts[key]) {
+          itemCounts[key] = { name: key, count: 0, revenue: 0 };
+        }
+        itemCounts[key].count += item.quantity || 1;
+        itemCounts[key].revenue += (item.price || 0) * (item.quantity || 1);
+      });
+    });
+    return Object.values(itemCounts).sort((a, b) => b.count - a.count).slice(0, 5);
+  }, [filteredOrders]);
+
+  // Low stock and negative stock items
+  const lowStockItems = inventory.filter(i => (i.quantity ?? 0) <= (i.min_threshold ?? 10));
 
   return (
-    <div className="space-y-8 pb-8">
-      {/* Title & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6 space-y-6 text-[#F4EBDD] font-sans">
+      {/* Top Banner & Date Filter Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-surface-card p-5 rounded-[24px] shadow-2xl relative overflow-hidden">
+        {/* Subtle accent light streak */}
+        <div className="pointer-events-none absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#D8C3A5]/30 to-transparent" />
+        
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">Executive Dashboard</h1>
-          <p className="text-sm text-zinc-400 mt-1">Real-time Saucify POS operational overview & analytics</p>
+          <div className="flex items-center space-x-2.5">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#F4EBDD] tracking-wide">Studio Management &amp; POS Dashboard</h1>
+            <Badge className="bg-[#B98245]/20 text-[#B98245] border-[#B98245]/40 font-mono text-[10px] font-bold shadow-xs">V2 STUDIO</Badge>
+          </div>
+          <p className="text-xs text-[#D8C3A5] mt-1 font-sans">Real-time studio revenue, purchasing ledgers, active sessions &amp; inventory</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Link href="/admin/orders">
-            <Button className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-zinc-950 shadow-[0_0_15px_rgba(255,184,0,0.3)] transition-all hover:scale-105 font-bold px-6">
-              <span>Manage Live Orders ({activeOrdersCount})</span>
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
 
-      {/* Low Stock Alert Banners */}
-      {lowStockItems.length > 0 && (
-        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-start space-x-4 shadow-[0_0_20px_rgba(244,63,94,0.1)] backdrop-blur-md">
-          <div className="p-2 bg-rose-500/20 rounded-xl">
-            <AlertTriangle className="h-5 w-5 text-rose-400" />
-          </div>
-          <div className="flex-1 text-sm mt-1">
-            <span className="font-bold text-rose-400">Critical Inventory Alert: </span>
-            {lowStockItems.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(", ")} requires immediate restocking.
-          </div>
-          <Link href="/admin/inventory">
-            <Button size="sm" variant="outline" className="text-xs border-rose-500/30 hover:bg-rose-500/20 text-rose-200 mt-0.5">
-              Restock Now
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <Card className="bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800/80 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-all group-hover:bg-orange-500/10" />
-          <div className="flex items-center justify-between relative z-10">
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Today's Revenue</span>
-            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-400 shadow-[0_0_10px_rgba(255,184,0,0.2)]">
-              <DollarSign className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4 relative z-10">
-            <span className="text-3xl font-black text-white">Rs. {todayRevenue.toLocaleString()}</span>
-            <div className="flex items-center mt-2 space-x-1">
-              <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <p className="text-[11px] text-emerald-400 font-bold">+12% vs yesterday</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800/80 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-all group-hover:bg-blue-500/10" />
-          <div className="flex items-center justify-between relative z-10">
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Orders</span>
-            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
-              <ShoppingBag className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4 relative z-10">
-            <span className="text-3xl font-black text-white">{orders.length}</span>
-            <p className="text-[11px] text-zinc-400 font-bold mt-2 tracking-wide">{activeOrdersCount} actively in progress</p>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800/80 shadow-lg relative overflow-hidden group">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-all group-hover:bg-emerald-500/10" />
-          <div className="flex items-center justify-between relative z-10">
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Fulfilled Orders</span>
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-              <CheckCircle className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4 relative z-10">
-            <span className="text-3xl font-black text-white">{orders.filter(o => o.status === "completed" || o.status === "served").length}</span>
-            <p className="text-[11px] text-emerald-400 font-bold mt-2 tracking-wide">Successfully served & closed</p>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800/80 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-3xl -mr-10 -mt-10 transition-all group-hover:bg-rose-500/10" />
-          <div className="flex items-center justify-between relative z-10">
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Pending Approval</span>
-            <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.2)]">
-              <Clock className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-4 relative z-10">
-            <span className="text-3xl font-black text-white">{pendingOrders.length}</span>
-            <div className="flex items-center mt-2 space-x-1">
-              <TrendingDown className="w-3 h-3 text-rose-400" />
-              <p className="text-[11px] text-rose-400 font-bold">Needs admin decision</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Monthly and Yearly Revenue Highlight Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-950 border border-zinc-800 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-orange-500/10 via-amber-500/5 to-transparent pointer-events-none" />
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">Revenue Analytics</span>
-            </div>
-            <h2 className="text-2xl font-black text-white mt-1">Monthly & Yearly Revenue Summary</h2>
-            <p className="text-xs text-zinc-400 mt-1 max-w-lg">
-              Aggregate gross revenue calculated from fulfilled and valid orders across the current fiscal cycle.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:w-1/2">
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center">
-                  <CalendarDays className="w-3.5 h-3.5 mr-1 text-orange-400" />
-                  This Month ({now.toLocaleString('default', { month: 'short' })})
-                </span>
-                <p className="text-2xl font-black text-white mt-1 font-mono">Rs. {thisMonthRevenue.toLocaleString()}</p>
-              </div>
-              <Link href="/admin/reports">
-                <Button size="sm" variant="ghost" className="text-xs text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 rounded-lg">
-                  Breakdown &rarr;
-                </Button>
-              </Link>
-            </div>
-
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center">
-                  <Calendar className="w-3.5 h-3.5 mr-1 text-amber-400" />
-                  This Year ({currentYear})
-                </span>
-                <p className="text-2xl font-black text-amber-400 mt-1 font-mono">Rs. {thisYearRevenue.toLocaleString()}</p>
-              </div>
-              <Link href="/admin/reports">
-                <Button size="sm" variant="ghost" className="text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg">
-                  Full Ledger &rarr;
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Pending Orders Action Section */}
-      <Card className="bg-gradient-to-b from-zinc-900 to-zinc-950 border-zinc-800 shadow-xl overflow-hidden">
-        <div className="h-1 w-full bg-gradient-to-r from-orange-500 to-amber-500" />
-        <CardHeader className="flex flex-row items-center justify-between bg-zinc-900/50 border-b border-zinc-800/50 pb-4">
-          <CardTitle className="text-white flex items-center space-x-3 text-xl">
-            <span>Incoming Waiter Orders (Cashier Review & Confirmation Queue)</span>
-            {pendingOrders.length > 0 && (
-              <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
-                {pendingOrders.length} Pending
-              </span>
-            )}
-          </CardTitle>
-          <span className="text-xs text-zinc-400 font-medium">
-            Managed by Cashier Panel
-          </span>
-        </CardHeader>
-        <CardContent className="pt-6">
-          {pendingOrders.length === 0 ? (
-            <div className="py-16 text-center rounded-2xl bg-zinc-950 border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center space-y-4">
-              <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                <CheckCircle className="h-8 w-8 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-white tracking-wide">Queue is Empty</p>
-                <p className="text-sm text-zinc-500 mt-1 max-w-sm mx-auto">All submitted waiter orders have been accepted or processed. Enjoy the calm!</p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-              {pendingOrders.map((order) => (
-                <div key={order.id} className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 shadow-lg relative group transition-all hover:border-orange-500/50 hover:shadow-[0_0_20px_rgba(255,184,0,0.1)]">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-black text-white text-lg">Order #{order.id}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 mt-1.5 text-xs font-medium">
-                        <span className="bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-md">{order.customer_name || "Counter / Dine-In"}</span>
-                        <span className="text-zinc-500">&bull;</span>
-                        <span className="text-zinc-400">Waiter: {order.waiter_name}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-lg font-black text-orange-400">Rs. {order.total}</span>
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Total</p>
-                    </div>
-                  </div>
-
-                  {/* Itemized List */}
-                  <div className="mt-4 pt-3 pb-2 border-y border-zinc-800/80 space-y-2 text-sm text-zinc-300">
-                    {order.items?.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center group/item">
-                        <span className="font-medium group-hover/item:text-white transition-colors">{item.quantity}x {item.menu_item_name}</span>
-                        <span className="text-zinc-500 font-mono text-xs">Rs. {item.price * item.quantity}</span>
-                      </div>
-                    ))}
-                    {order.notes && (
-                      <div className="mt-3 p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                        <p className="text-xs text-amber-400/90 italic font-medium">📝 Note: "{order.notes}"</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center space-x-3 pt-4">
-                    <Button
-                      size="md"
-                      onClick={() => handleAcceptOrder(order.id)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)] font-bold rounded-xl transition-all hover:-translate-y-0.5"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      <span>Accept</span>
-                    </Button>
-                    <Button
-                      size="md"
-                      variant="outline"
-                      onClick={() => setRejectingOrderId(order.id)}
-                      className="flex-1 border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 font-bold rounded-xl transition-all"
-                    >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      <span>Reject</span>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Reject Reason Modal */}
-      <Modal
-        isOpen={!!rejectingOrderId}
-        onClose={() => setRejectingOrderId(null)}
-        title={`Reject Order #${rejectingOrderId}`}
-      >
-        <div className="space-y-5">
-          <p className="text-sm text-zinc-400">
-            Please provide a rejection reason for the waiter. This helps them inform the customer properly.
-          </p>
-          <div className="space-y-2">
-            <Input
-              label="Rejection Reason"
-              placeholder="e.g. Chicken unavailable, Kitchen closed..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="bg-zinc-950 border-zinc-800 focus:border-rose-500 focus:ring-rose-500/20"
+        {/* Date Filter Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center bg-black/40 border border-white/10 rounded-2xl px-3 py-2 space-x-2 backdrop-blur-md shadow-inner">
+            <Calendar className="h-4 w-4 text-[#c87740]" />
+            <span className="text-[11px] font-bold text-zinc-400">From:</span>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent text-xs text-zinc-200 focus:outline-hidden font-medium cursor-pointer"
             />
           </div>
-          <div className="flex justify-end space-x-3 pt-4 border-t border-zinc-800">
-            <Button variant="ghost" onClick={() => setRejectingOrderId(null)} className="rounded-xl">
-              Cancel
-            </Button>
-            <Button variant="danger" onClick={handleConfirmReject} className="rounded-xl bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-500/20">
-              Confirm Rejection
-            </Button>
+
+          <div className="flex items-center bg-black/40 border border-white/10 rounded-2xl px-3 py-2 space-x-2 backdrop-blur-md shadow-inner">
+            <Calendar className="h-4 w-4 text-[#c87740]" />
+            <span className="text-[11px] font-bold text-zinc-400">To:</span>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent text-xs text-zinc-200 focus:outline-hidden font-medium cursor-pointer"
+            />
           </div>
+
+          <Button 
+            size="sm" 
+            onClick={loadAllData}
+            className="bg-gradient-to-r from-[#c87740] to-[#b0622f] hover:from-[#d9854d] hover:to-[#c87740] text-white font-bold h-9 px-4 rounded-xl flex items-center space-x-1.5 shadow-[0_4px_16px_rgba(200,119,64,0.4)] border border-white/20 transition-all cursor-pointer"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <span>Apply</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const d = new Date();
+              d.setDate(d.getDate() - 30);
+              setStartDate(d.toISOString().split("T")[0]);
+              setEndDate(todayStr);
+            }}
+            className="border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-zinc-300 hover:text-white h-9 px-3.5 rounded-xl text-xs backdrop-blur-md transition-all cursor-pointer"
+          >
+            Reset
+          </Button>
         </div>
-      </Modal>
+      </div>
+
+      {/* 8 Primary Financial & Ledger Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Visited Customer Count */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Visited Customers</CardTitle>
+            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-xs">
+              <Users className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-[#fdf6e3]">
+              <AnimatedNumber value={visitedCustomerCount} />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">Walk-in & registered accounts</p>
+          </CardContent>
+        </Card>
+
+        {/* Total Sales Amount */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Sales</CardTitle>
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-emerald-400">
+              <AnimatedNumber value={totalSalesAmount} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">{filteredOrders.length} Completed / Active Invoices</p>
+          </CardContent>
+        </Card>
+
+        {/* Total Purchase Amount */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Purchases</CardTitle>
+            <div className="p-2.5 rounded-xl bg-[#c87740]/10 text-[#c87740] border border-[#c87740]/20 shadow-xs">
+              <Truck className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-[#c87740]">
+              <AnimatedNumber value={totalPurchaseAmount} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">{filteredPurchases.length} Purchase Bills in period</p>
+          </CardContent>
+        </Card>
+
+        {/* Sales Return Amount */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Sales Return</CardTitle>
+            <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-xs">
+              <RotateCcw className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-rose-400">
+              <AnimatedNumber value={salesReturnAmount} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">{filteredSaleReturns.length} Invoices refunded</p>
+          </CardContent>
+        </Card>
+
+        {/* Customer Outstanding Balance */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cust. Outstanding Balance</CardTitle>
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-xs">
+              <Receipt className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-amber-400">
+              <AnimatedNumber value={customerOutstandingBalance} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">Pending receivable from clients</p>
+          </CardContent>
+        </Card>
+
+        {/* Customer Payments Collected */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Cust. Payments Collected</CardTitle>
+            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-xs">
+              <DollarSign className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-cyan-400">
+              <AnimatedNumber value={customerPaymentsCollected} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">Total revenue collected to date</p>
+          </CardContent>
+        </Card>
+
+        {/* Vendor Outstanding Balance */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Vendor Outstanding</CardTitle>
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-xs">
+              <Truck className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-purple-400">
+              <AnimatedNumber value={vendorOutstandingBalance} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">Payable balance to suppliers</p>
+          </CardContent>
+        </Card>
+
+        {/* Payments Collected from / Paid to Vendors */}
+        <Card className="glass-surface-card rounded-[22px] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Vendor Payments Cleared</CardTitle>
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-xs">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-indigo-400">
+              <AnimatedNumber value={vendorPaymentsCollected} prefix="Rs. " />
+            </div>
+            <p className="text-[11px] text-zinc-400 mt-1">Settled invoices with vendors</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 3 Action Sections: Recent Invoices, Top-Selling Products, Low-Stock Products */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Invoices List */}
+        <Card className="glass-surface-card rounded-[24px] border-white/10 shadow-xl lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-zinc-800/80">
+            <div>
+              <CardTitle className="text-sm font-bold text-[#fdf6e3] flex items-center space-x-2">
+                <Receipt className="h-4 w-4 text-[#c87740]" />
+                <span>Recent Invoices</span>
+              </CardTitle>
+              <p className="text-[11px] text-zinc-400">Latest transactions</p>
+            </div>
+            <Link href="/admin/orders" className="text-xs text-[#c87740] hover:underline font-bold">
+              View All
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-3 space-y-2.5">
+            {filteredOrders.slice(0, 6).map((order) => (
+              <div 
+                key={order.id} 
+                className="p-2.5 rounded-xl p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 hover:border-white/15 flex items-center justify-between hover:border-zinc-700 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono text-xs font-bold text-[#c87740]">#{formatOrderNumber(order.order_number || order.id)}</span>
+                    <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 border-zinc-700 text-zinc-300">
+                      {order.order_type}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">{order.customer_name || "Walk-in Customer"}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-black text-emerald-400">Rs. {(order.total || 0).toLocaleString()}</div>
+                  <span className={`text-[10px] font-bold capitalize ${
+                    order.status === "completed" ? "text-emerald-500" :
+                    order.status === "cancelled" ? "text-rose-500" : "text-amber-400"
+                  }`}>
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+            {filteredOrders.length === 0 && (
+              <div className="text-center py-6 text-zinc-500 text-xs">No invoices in selected date range</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top-Selling Products List */}
+        <Card className="glass-surface-card rounded-[24px] border-white/10 shadow-xl lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-zinc-800/80">
+            <div>
+              <CardTitle className="text-sm font-bold text-[#fdf6e3] flex items-center space-x-2">
+                <TrendingUp className="h-4 w-4 text-emerald-400" />
+                <span>Top-Selling Products</span>
+              </CardTitle>
+              <p className="text-[11px] text-zinc-400">Best performers by volume</p>
+            </div>
+            <Link href="/admin/reports" className="text-xs text-[#c87740] hover:underline font-bold">
+              Full Report
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-3 space-y-2.5">
+            {topSelling.map((item, idx) => (
+              <div 
+                key={item.name} 
+                className="p-2.5 rounded-xl p-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 hover:border-white/15 flex items-center justify-between"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="h-6 w-6 rounded-lg bg-emerald-500/10 text-emerald-400 font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#fdf6e3]">{item.name}</p>
+                    <p className="text-[10px] text-zinc-400">{item.count} units sold</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-[#c87740]">Rs. {item.revenue.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+            {topSelling.length === 0 && (
+              <div className="text-center py-6 text-zinc-500 text-xs">No product sales in selected date range</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Low-Stock Products List */}
+        <Card className="glass-surface-card rounded-[24px] border-white/10 shadow-xl lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-zinc-800/80">
+            <div>
+              <CardTitle className="text-sm font-bold text-[#fdf6e3] flex items-center space-x-2">
+                <AlertTriangle className="h-4 w-4 text-rose-400" />
+                <span>Low-Stock Inventory</span>
+              </CardTitle>
+              <p className="text-[11px] text-zinc-400">Below threshold alerts</p>
+            </div>
+            <Link href="/admin/inventory" className="text-xs text-[#c87740] hover:underline font-bold">
+              Manage Stock (F3)
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-3 space-y-2.5">
+            {lowStockItems.slice(0, 6).map((inv) => (
+              <div 
+                key={inv.id} 
+                className="p-2.5 rounded-xl bg-zinc-900 border border-rose-500/20 flex items-center justify-between"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400">
+                    <Package className="h-3.5 w-3.5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#fdf6e3]">{inv.name}</p>
+                    <p className="text-[10px] text-zinc-400">Min Threshold: {inv.min_threshold} {inv.unit}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold text-xs">
+                    {inv.quantity} {inv.unit}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            {lowStockItems.length === 0 && (
+              <div className="text-center py-6 text-emerald-400 text-xs flex items-center justify-center space-x-1">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>All inventory items are adequately stocked!</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+
+

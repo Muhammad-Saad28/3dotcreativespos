@@ -250,7 +250,7 @@ export function KitchenReceiptModal({ isOpen, onClose, order }: KitchenReceiptMo
                 *** KITCHEN ORDER TICKET ***
               </h2>
               <p className="text-xs font-black tracking-widest text-black uppercase mt-0.5">
-                SAUCIFY KITCHEN DISPATCH
+                3DOT CREATIVES KITCHEN DISPATCH
               </p>
             </div>
 

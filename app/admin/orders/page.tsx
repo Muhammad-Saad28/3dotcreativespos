@@ -251,7 +251,7 @@ export default function AdminOrdersPage() {
               ? order.customer_phone.replace(/^0/, "92").replace(/[^0-9]/g, "")
               : null;
             const customerWaMsg = encodeURIComponent(
-              `Hello ${order.customer_name || "Customer"}, this is Saucify regarding your Order ${shortOrderRef}. Your order status is: ${order.status.toUpperCase()}.`
+              `Hello ${order.customer_name || "Customer"}, this is 3Dot Creatives regarding your Order ${shortOrderRef}. Your order status is: ${order.status.toUpperCase()}.`
             );
 
             return (
@@ -378,7 +378,7 @@ export default function AdminOrdersPage() {
                   )}
 
                   {/* Items Summary */}
-                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 space-y-1.5 text-xs">
+                  <div className="p-3 rounded-xl glass-surface-card/80 space-y-1.5 text-xs">
                     {order.items?.map((item) => (
                       <div key={item.id} className="flex justify-between text-zinc-300">
                         <span>{item.menu_item_name} &times; {item.quantity}</span>
@@ -506,7 +506,7 @@ export default function AdminOrdersPage() {
       {/* Payment & Checkout Modal */}
       <Modal isOpen={!!checkoutOrder} onClose={() => setCheckoutOrder(null)} title={`Checkout & Collect Payment - Order #${checkoutOrder?.order_number || checkoutOrder?.id.slice(0, 8)}`}>
         <div className="space-y-4">
-          <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 text-xs">
+          <div className="p-3 rounded-xl glass-surface-card space-y-2 text-xs">
             <div className="flex justify-between text-zinc-400">
               <span>Subtotal:</span>
               <span className="text-white font-mono">Rs. {checkoutOrder?.subtotal || 0}</span>
@@ -611,7 +611,7 @@ export default function AdminOrdersPage() {
             </div>
 
             {discountType === "percentage" && (
-              <div className="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2 mb-2">
+              <div className="p-3 glass-surface-card rounded-xl space-y-2 mb-2">
                 <Input
                   label="Enter Any Discount Percentage (%)"
                   type="number"
@@ -647,7 +647,7 @@ export default function AdminOrdersPage() {
             )}
 
             {discountType === "flat" && (
-              <div className="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2 mb-2">
+              <div className="p-3 glass-surface-card rounded-xl space-y-2 mb-2">
                 <Input
                   label="Enter Any Flat Cut-Off Amount (Rs)"
                   type="number"
@@ -709,3 +709,4 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
+

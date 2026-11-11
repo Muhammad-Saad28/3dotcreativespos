@@ -41,6 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 # mobile & desktop builds
-/saucify-mobile/
+/3dotcreatives-mobile/
 /dist-desktop/
 

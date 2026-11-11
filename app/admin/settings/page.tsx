@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Settings, Save, CheckCircle2 } from "lucide-react";
 
 export default function AdminSettingsPage() {
-  const [name, setName] = useState("Saucify");
-  const [location, setLocation] = useState("Bismillah Scheme, Lahore");
-  const [phone, setPhone] = useState("+92 300 0000000");
-  const [email, setEmail] = useState("info@saucify.pk");
+  const [name, setName] = useState("3Dot Creatives");
+  const [location, setLocation] = useState("Lahore, Pakistan");
+  const [phone, setPhone] = useState("+92 305 228 8882");
+  const [email, setEmail] = useState("info@3dotcreatives.agency");
   const [taxRate, setTaxRate] = useState("0");
   const [currency, setCurrency] = useState("Rs.");
   const [serviceCharge, setServiceCharge] = useState("0");

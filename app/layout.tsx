@@ -1,27 +1,39 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { SplashScreen } from "@/components/splash-screen";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const cormorant = Cormorant_Garamond({
+  variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Saucify POS",
-  description: "Saucify Restaurant Management & Order System",
+  title: "3Dot Creatives POS",
+  description: "3Dot Creatives POS & Restaurant Management System",
   icons: {
     icon: [
-      { url: "/logo.png", type: "image/png" },
+      { url: "/logo.jpeg", type: "image/jpeg" },
       { url: "/favicon.ico" },
     ],
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    shortcut: "/logo.jpeg",
+    apple: "/logo.jpeg",
   },
 };
 
@@ -33,9 +45,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${jakarta.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground relative">
+        {/* Cinematic Splash Screen */}
+        <SplashScreen />
+
         {/* SVG Noise Texture Overlay */}
         <div 
           className="pointer-events-none fixed inset-0 z-50 h-full w-full opacity-[0.03] mix-blend-overlay" 

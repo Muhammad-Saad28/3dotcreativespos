@@ -12,6 +12,8 @@ import {
   addPOSInventoryItem,
   deletePOSInventoryItem,
   POSInventoryItem,
+  getInventoryDepletionLogs,
+  POSInventoryDepletionLog,
 } from "@/lib/pos-data";
 import {
   Boxes,
@@ -24,6 +26,11 @@ import {
   CheckCircle2,
   XCircle,
   TrendingDown,
+  RotateCcw,
+  Clock,
+  Sparkles,
+  ArrowDownRight,
+  ArrowUpRight
 } from "lucide-react";
 
 /** Strip the trailing SKU suffix e.g. "Chicken boneless raw (CHK_RAW)" → "Chicken boneless raw" */
@@ -42,30 +49,32 @@ const STATUS_META = {
     label: "In Stock",
     bar: "bg-emerald-500",
     icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />,
-    border: "border-l-emerald-500",
+    border: "",
     glow: "",
   },
   low: {
     label: "Low Stock",
     bar: "bg-amber-400",
     icon: <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />,
-    border: "border-l-amber-400",
-    glow: "shadow-amber-900/30",
+    border: "",
+    glow: "",
   },
   critical: {
     label: "Critical",
     bar: "bg-rose-500",
     icon: <XCircle className="h-3.5 w-3.5 text-rose-400" />,
-    border: "border-l-rose-500",
-    glow: "shadow-rose-900/40",
+    border: "",
+    glow: "",
   },
 };
 
 export default function AdminInventoryPage() {
+  const [activeTab, setActiveTab] = useState<"inventory" | "depletion_logs">("inventory");
   const [inventory, setInventory] = useState<POSInventoryItem[]>([]);
+  const [depletionLogs, setDepletionLogs] = useState<POSInventoryDepletionLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
-    "all" | "in_stock" | "low" | "critical"
+    "all" | "in_stock" | "low" | "critical" | "negative"
   >("all");
 
   // Adjust Stock State
@@ -90,8 +99,12 @@ export default function AdminInventoryPage() {
   );
 
   const refreshData = async () => {
-    const fetched = await getPOSInventory();
-    setInventory(fetched);
+    const [fetchedInv, fetchedLogs] = await Promise.all([
+      getPOSInventory(),
+      getInventoryDepletionLogs()
+    ]);
+    setInventory(fetchedInv);
+    setDepletionLogs(fetchedLogs);
   };
 
   useEffect(() => {
@@ -146,6 +159,7 @@ export default function AdminInventoryPage() {
   const inStockCount = inventory.filter((i) => i.status === "in_stock").length;
   const lowCount = inventory.filter((i) => i.status === "low").length;
   const criticalCount = inventory.filter((i) => i.status === "critical").length;
+  const negativeCount = inventory.filter((i) => (i.quantity ?? 0) < 0).length;
 
   const filteredInventory = inventory.filter((item) => {
     const name = cleanName(item.name).toLowerCase();
@@ -153,8 +167,18 @@ export default function AdminInventoryPage() {
       name.includes(searchQuery.toLowerCase()) ||
       item.unit.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter =
-      filterStatus === "all" || item.status === filterStatus;
+      filterStatus === "all" ||
+      (filterStatus === "negative" ? (item.quantity ?? 0) < 0 : item.status === filterStatus);
     return matchesSearch && matchesFilter;
+  });
+
+  const filteredDepletionLogs = depletionLogs.filter((log) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      log.menu_item_name.toLowerCase().includes(q) ||
+      log.inventory_name.toLowerCase().includes(q) ||
+      log.order_number.toString().includes(q)
+    );
   });
 
   return (
@@ -163,23 +187,147 @@ export default function AdminInventoryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-white tracking-tight">
-            Inventory Control
+            Inventory &amp; Recipe Control
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Track raw ingredients, stock quantities, and minimum thresholds
+            Track raw ingredients, stock quantities, and automated recipe consumption
           </p>
         </div>
-        <Button
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-orange-600 hover:bg-orange-500 font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-orange-600/20 self-start sm:self-auto"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add Item</span>
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#c87740] hover:bg-[#b06530] font-bold text-xs flex items-center space-x-1.5 shadow-md shadow-[#c87740]/20 self-start sm:self-auto"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Item</span>
+          </Button>
+        </div>
       </div>
 
-      {/* ── Stat Tiles ─────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* ── Tabs Navigation ────────────────────────────────── */}
+      <div className="flex items-center gap-2 border-b border-zinc-800 pb-3">
+        <button
+          onClick={() => setActiveTab("inventory")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+            activeTab === "inventory"
+              ? "bg-[#c87740] text-white shadow-md shadow-[#c87740]/25"
+              : "text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent"
+          }`}
+        >
+          <Boxes className="h-4 w-4" />
+          <span>Stock &amp; Ingredients Master ({inventory.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("depletion_logs")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
+            activeTab === "depletion_logs"
+              ? "bg-[#c87740] text-white shadow-md shadow-[#c87740]/25"
+              : "text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent"
+          }`}
+        >
+          <Sparkles className="h-4 w-4 text-amber-400" />
+          <span>Automated Recipe Depletion Audit ({depletionLogs.length})</span>
+        </button>
+      </div>
+
+      {activeTab === "depletion_logs" ? (
+        /* Real-time Recipe Depletion Audit View */
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-[#171b13] border border-zinc-800 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-[#fdf6e3] flex items-center gap-2">
+                <span>Real-Time Recipe Depletion Engine</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  AUTOMATIC
+                </span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Kitchen ingredients are automatically deducted when orders are placed and restored if an order is cancelled.
+              </p>
+            </div>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Input
+                placeholder="Search menu item, ingredient, order #..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-zinc-950 border-zinc-800 text-xs h-9 rounded-xl"
+              />
+            </div>
+          </div>
+
+          <Card className="bg-[#171b13] border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-zinc-300">
+                <thead className="bg-black/40 backdrop-blur-md text-zinc-400 uppercase text-[10px] tracking-wider border-b border-zinc-800 font-bold">
+                  <tr>
+                    <th className="px-4 py-3.5">Time</th>
+                    <th className="px-4 py-3.5">Order #</th>
+                    <th className="px-4 py-3.5">Menu Item Ordered</th>
+                    <th className="px-4 py-3.5">Raw Ingredient Depleted</th>
+                    <th className="px-4 py-3.5">Qty Deducted</th>
+                    <th className="px-4 py-3.5">Remaining Stock</th>
+                    <th className="px-4 py-3.5">Depletion Type</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/80 font-mono">
+                  {filteredDepletionLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-zinc-500 font-sans text-xs">
+                        No recipe depletion logs found matching query.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDepletionLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-white/[0.04] transition-colors">
+                        <td className="px-4 py-3 text-zinc-400 font-sans text-[11px]">
+                          {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          <span className="block text-[10px] text-zinc-500">
+                            {new Date(log.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-bold text-[#c87740]">
+                          #{log.order_number}
+                        </td>
+                        <td className="px-4 py-3 font-sans font-semibold text-zinc-100">
+                          {log.menu_item_name}
+                        </td>
+                        <td className="px-4 py-3 font-sans text-zinc-300">
+                          {cleanName(log.inventory_name)}
+                        </td>
+                        <td className="px-4 py-3 font-bold">
+                          <span className={log.is_reversion ? "text-emerald-400" : "text-rose-400"}>
+                            {log.is_reversion ? "+" : "-"}{Math.abs(log.quantity_deducted)} {log.unit}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-zinc-200">
+                          {log.remaining_stock} {log.unit}
+                        </td>
+                        <td className="px-4 py-3 font-sans">
+                          {log.is_reversion ? (
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
+                              Restored (Cancelled)
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-[#c87740]/20 text-[#c87740] border-[#c87740]/30 text-[10px] font-bold">
+                              Auto-Depleted (Order)
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      ) : (
+        /* Original Stock Master View */
+        <>
+          {/* ── Stat Tiles ─────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <Card className="bg-zinc-900 border-zinc-800 p-4 flex items-center gap-3">
           <div className="p-2 rounded-xl bg-zinc-800">
             <Boxes className="h-5 w-5 text-zinc-300" />
@@ -239,6 +387,20 @@ export default function AdminInventoryPage() {
             </p>
           </div>
         </Card>
+
+        <Card className="bg-zinc-900 border-zinc-800 p-4 flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-purple-500/10">
+            <Minus className="h-5 w-5 text-purple-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-black text-purple-400 leading-none">
+              {negativeCount}
+            </p>
+            <p className="text-[10px] text-zinc-500 font-medium mt-0.5 uppercase tracking-wider">
+              Negative Stock
+            </p>
+          </div>
+        </Card>
       </div>
 
       {/* ── Filters & Search ───────────────────────────────── */}
@@ -250,7 +412,8 @@ export default function AdminInventoryPage() {
               { key: "in_stock", label: `In Stock (${inStockCount})`, cls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" },
               { key: "low", label: `Low (${lowCount})`, cls: "bg-amber-500/20 text-amber-400 border border-amber-500/40" },
               { key: "critical", label: `Critical (${criticalCount})`, cls: "bg-rose-500/20 text-rose-400 border border-rose-500/40" },
-            ] as { key: "all" | "in_stock" | "low" | "critical"; label: string; cls: string }[]
+              { key: "negative", label: `Negative Stock (${negativeCount})`, cls: "bg-purple-500/20 text-purple-400 border border-purple-500/40" },
+            ] as { key: "all" | "in_stock" | "low" | "critical" | "negative"; label: string; cls: string }[]
           ).map(({ key, label, cls }) => (
             <button
               key={key}
@@ -300,7 +463,7 @@ export default function AdminInventoryPage() {
             return (
               <Card
                 key={item.id}
-                className={`bg-zinc-900 border-zinc-800 border-l-4 ${meta.border} overflow-hidden hover:bg-zinc-850 transition-colors ${meta.glow ? `shadow-lg ${meta.glow}` : ""}`}
+                className="glass-surface-card rounded-[24px] border-white/10 overflow-hidden hover:bg-white/[0.08] transition-all p-0"
               >
                 {/* Card Body */}
                 <div className="p-4 space-y-3">
@@ -393,6 +556,8 @@ export default function AdminInventoryPage() {
           })}
         </div>
       )}
+      </>
+      )}
 
       {/* ── Add New Item Modal ─────────────────────────────── */}
       <Modal
@@ -417,7 +582,7 @@ export default function AdminInventoryPage() {
               <select
                 value={newItemUnit}
                 onChange={(e) => setNewItemUnit(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full glass-surface-card rounded-xl px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
               >
                 <option value="kg">kg (Kilograms)</option>
                 <option value="g">g (Grams)</option>
@@ -480,7 +645,7 @@ export default function AdminInventoryPage() {
       >
         {selectedItem && (
           <div className="space-y-4">
-            <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 flex justify-between text-xs">
+            <div className="p-3 rounded-xl glass-surface-card flex justify-between text-xs">
               <span className="text-zinc-400">Current Level</span>
               <span className="font-bold text-white">
                 {selectedItem.quantity} {selectedItem.unit}
@@ -577,3 +742,4 @@ export default function AdminInventoryPage() {
     </div>
   );
 }
+

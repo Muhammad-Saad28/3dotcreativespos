@@ -24,7 +24,7 @@ export default function KitchenLayout({ children }: { children: React.ReactNode 
   if (loading || !user) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-zinc-950 text-zinc-400">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FF6B00] border-t-transparent" />
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#c87740] border-t-transparent" />
       </div>
     );
   }
@@ -38,10 +38,12 @@ export default function KitchenLayout({ children }: { children: React.ReactNode 
       {/* Kitchen Header */}
       <header className="h-16 px-4 sm:px-6 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="flex items-center space-x-3">
-          <img src="/logo.png" alt="Saucify Logo" className="h-9 w-auto object-contain rounded-md" />
+          <div className="h-10 w-10 rounded-xl overflow-hidden bg-[#fdf6e3] p-1 shadow-md border border-[#d8c3a5]/30 flex items-center justify-center shrink-0">
+            <img src="/logo.png" alt="3Dot Creatives" className="w-full h-full object-contain rounded-lg" />
+          </div>
           <div className="flex items-center space-x-2">
-            <span className="font-black text-xl text-[#F7F4EE] tracking-tight">SAUCIFY</span>
-            <span className="px-2 py-0.5 rounded-lg bg-[#FF6B00]/15 text-[#FF6B00] font-extrabold text-xs uppercase tracking-wider flex items-center space-x-1 border border-[#FF6B00]/30">
+            <span className="font-extrabold text-lg text-[#fdf6e3] tracking-tight">3dot<span className="text-[#c87740]">creatives</span></span>
+            <span className="px-2 py-0.5 rounded-lg bg-[#c87740]/15 text-[#c87740] font-extrabold text-xs uppercase tracking-wider flex items-center space-x-1 border border-[#c87740]/30">
               <ChefHat className="h-3.5 w-3.5" />
               <span>KITCHEN DISPLAY (KDS)</span>
             </span>

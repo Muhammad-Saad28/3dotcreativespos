@@ -158,7 +158,7 @@ export default function AdminTablesPage() {
       >
         {selectedTable && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-800">
+            <div className="flex items-center justify-between p-3 rounded-xl glass-surface-card">
               <span className="text-xs text-zinc-400">Current Status</span>
               <Badge variant={selectedTable.status}>{selectedTable.status}</Badge>
             </div>
@@ -173,7 +173,7 @@ export default function AdminTablesPage() {
             )}
 
             {getActiveOrderForTable(selectedTable.table_number) && (
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 text-xs">
+              <div className="p-4 rounded-xl glass-surface-card space-y-2 text-xs">
                 <span className="font-bold text-white text-sm">Active Order Summary</span>
                 <p className="text-zinc-400">
                   Order #{getActiveOrderForTable(selectedTable.table_number)?.id} &bull; Waiter: {getActiveOrderForTable(selectedTable.table_number)?.waiter_name}
@@ -294,3 +294,4 @@ export default function AdminTablesPage() {
     </div>
   );
 }
+

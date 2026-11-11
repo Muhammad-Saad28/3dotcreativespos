@@ -37,7 +37,7 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
   if (loading || !user) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-zinc-950 text-zinc-400">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FF6B00] border-t-transparent" />
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#c87740] border-t-transparent" />
       </div>
     );
   }
@@ -51,10 +51,16 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 h-full bg-zinc-900 border-r border-zinc-800 flex-col shrink-0 relative z-50">
         <div className="h-16 shrink-0 px-6 border-b border-zinc-800 flex items-center space-x-3">
-          <img src="/logo.png" alt="Saucify Logo" className="h-9 w-auto object-contain rounded-md" />
-          <div>
-            <span className="font-extrabold tracking-tight text-[#F7F4EE] text-lg">SAUCIFY</span>
-            <span className="ml-1 text-xs font-bold text-[#FF6B00] bg-[#FF6B00]/15 px-1.5 py-0.5 rounded border border-[#FF6B00]/30">WAITER</span>
+          <div className="h-10 w-10 rounded-xl overflow-hidden bg-[#fdf6e3] p-1 shadow-md border border-[#d8c3a5]/30 flex items-center justify-center shrink-0">
+            <img src="/logo.png" alt="3Dot Creatives" className="w-full h-full object-contain rounded-lg" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-extrabold tracking-tight text-[#fdf6e3] text-base leading-tight">
+              3dot<span className="text-[#c87740]">creatives</span>
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.2em] text-[#d8c3a5] font-bold">
+              Waiter Desk
+            </span>
           </div>
         </div>
 
@@ -80,8 +86,8 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
                 onClick={() => router.push(item.href)}
                 className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   isActive
-                    ? "bg-[#FF6B00] text-white shadow-md shadow-[#FF6B00]/25 font-bold"
-                    : "text-zinc-400 hover:text-[#F7F4EE] hover:bg-[#292929]"
+                    ? "bg-[#c87740] text-white shadow-md shadow-[#c87740]/25 font-bold"
+                    : "text-zinc-400 hover:text-[#fdf6e3] hover:bg-zinc-800"
                 }`}
               >
                 <Icon className={`h-4 w-4 ${isActive ? "text-white" : "text-zinc-400"}`} />
@@ -107,7 +113,7 @@ export default function WaiterLayout({ children }: { children: React.ReactNode }
         {/* Top Bar for Waiter */}
         <header className="shrink-0 h-14 px-4 sm:px-6 bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center space-x-2">
-            <img src="/logo.png" alt="Saucify Logo" className="h-7 w-auto object-contain md:hidden rounded-sm" />
+            <img src="/logo.png" alt="3Dot Creatives Logo" className="h-7 w-auto object-contain md:hidden rounded-sm" />
             <span className="font-bold text-sm text-zinc-100">
               Waiter &bull; {user.name}
             </span>

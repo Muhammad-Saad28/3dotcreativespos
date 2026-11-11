@@ -43,10 +43,10 @@ export function PendingApprovalScreen() {
       <div className="relative w-full max-w-md space-y-6 text-center">
         {/* Brand Logo Header */}
         <div className="flex flex-col items-center space-y-2">
-          <div className="p-2 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl">
-            <img src="/logo.png" alt="Saucify POS Logo" className="h-14 w-auto object-contain rounded-xl" />
+          <div className="h-14 w-14 rounded-2xl bg-[#fdf6e3] p-1.5 shadow-xl border border-[#d8c3a5]/40 mb-1 flex items-center justify-center">
+            <img src="/logo.png" alt="3Dot Creatives POS Logo" className="w-full h-full object-contain rounded-xl" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">SAUCIFY POS</h1>
+          <h1 className="text-2xl font-black tracking-tight text-[#fdf6e3]">3dot<span className="text-[#c87740]">creatives</span> POS</h1>
           <p className="text-xs text-zinc-400 font-semibold uppercase tracking-widest">
             {user?.role?.toUpperCase()} ACCESS PANEL
           </p>
@@ -143,8 +143,8 @@ export function PendingApprovalScreen() {
           </div>
         </div>
 
-        <p className="text-xs text-zinc-600">
-          Saucify POS &bull; Restaurant Management System
+        <p className="text-xs text-[#d8c3a5]/70">
+          3Dot Creatives POS &bull; Restaurant Management System
         </p>
       </div>
     </div>

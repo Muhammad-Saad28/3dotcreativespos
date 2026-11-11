@@ -67,10 +67,10 @@ function createWindow(url) {
     height: 850,
     minWidth: 1024,
     minHeight: 700,
-    title: 'Saucify Restaurant Software',
+    title: '3Dot Creatives POS Software',
     icon: fs.existsSync(iconPath) ? iconPath : undefined,
     autoHideMenuBar: true,
-    backgroundColor: '#171717',
+    backgroundColor: '#1a1d13',
     webPreferences: {
       preload: path.join(__dirname, 'electron-preload.js'),
       nodeIntegration: false,

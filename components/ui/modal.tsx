@@ -40,12 +40,12 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 z-10 animate-in zoom-in-95 duration-200",
+          "relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-[28px] realistic-glass p-6 text-zinc-100 z-10 animate-in zoom-in-95 duration-200 overflow-hidden",
           className
         )}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800 mb-4 shrink-0">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">{title}</h3>
+        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4 shrink-0">
+          <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors"

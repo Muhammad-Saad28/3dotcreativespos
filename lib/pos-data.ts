@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 export interface POSCategory {
   id: string;
   name: string;
+  description?: string;
   active: boolean;
 }
 
@@ -18,6 +19,17 @@ export interface POSMenuItem {
   available: boolean;
   featured: boolean;
   category_name?: string;
+  code?: string;
+  barcode?: string;
+  cost_price?: number;
+  box_qty?: number;
+  box_price?: number;
+  formula?: string;
+  company_id?: string;
+  company_name?: string;
+  discount_percent?: number;
+  stock_quantity?: number;
+  min_stock_threshold?: number;
 }
 
 export interface POSTable {
@@ -74,6 +86,174 @@ export interface POSOrder {
   delivered_at?: string | null;
   return_started_at?: string | null;
   handover_completed_at?: string | null;
+  mileage?: number;
+  customer_id?: string;
+  received_amount?: number;
+  change_due?: number;
+  is_held?: boolean;
+  shift_id?: string | null;
+}
+
+// ----------------------------------------
+// POS V2 (SALE POINT POS) DATA MODELS
+// ----------------------------------------
+
+export interface POSCompany {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string;
+  contact_person?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  active: boolean;
+  created_at?: string;
+}
+
+export interface POSVendor {
+  id: string;
+  name: string;
+  company_name?: string;
+  contact_person?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  balance: number;
+  payments_collected: number;
+  active: boolean;
+  created_at?: string;
+}
+
+export interface POSCustomer {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  balance: number;
+  total_spent: number;
+  payments_collected: number;
+  visited_count: number;
+  active: boolean;
+  created_at?: string;
+}
+
+export interface POSIncomeType {
+  id: string;
+  name: string;
+  description?: string;
+  active: boolean;
+}
+
+export interface POSIncome {
+  id: string;
+  type_id: string;
+  type_name?: string;
+  amount: number;
+  payment_method: string;
+  reference_no?: string;
+  received_from?: string;
+  remarks?: string;
+  date: string;
+  created_at?: string;
+}
+
+export interface POSExpenseType {
+  id: string;
+  name: string;
+  description?: string;
+  active: boolean;
+}
+
+export interface POSExpense {
+  id: string;
+  type_id: string;
+  type_name?: string;
+  amount: number;
+  payment_method: string;
+  reference_no?: string;
+  paid_to?: string;
+  remarks?: string;
+  date: string;
+  created_at?: string;
+}
+
+export interface POSPurchaseItem {
+  id: string;
+  purchase_id?: string;
+  product_id: string;
+  product_name: string;
+  product_code?: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+}
+
+export interface POSPurchase {
+  id: string;
+  invoice_no: string;
+  vendor_id?: string;
+  vendor_name: string;
+  purchase_date: string;
+  total_amount: number;
+  paid_amount: number;
+  balance_amount: number;
+  payment_method: string;
+  status: "received" | "pending" | "partial";
+  remarks?: string;
+  items?: POSPurchaseItem[];
+  created_at?: string;
+}
+
+export interface POSPurchaseReturnItem {
+  id: string;
+  purchase_return_id?: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+}
+
+export interface POSPurchaseReturn {
+  id: string;
+  return_no: string;
+  purchase_id?: string;
+  purchase_invoice_no?: string;
+  vendor_id?: string;
+  vendor_name: string;
+  return_date: string;
+  total_returned_amount: number;
+  refund_status: "refunded" | "pending";
+  reason?: string;
+  items?: POSPurchaseReturnItem[];
+  created_at?: string;
+}
+
+export interface POSSaleReturnItem {
+  id: string;
+  sale_return_id?: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+export interface POSSaleReturn {
+  id: string;
+  return_no: string;
+  order_id?: string;
+  order_number?: string;
+  customer_id?: string;
+  customer_name: string;
+  return_date: string;
+  total_refund_amount: number;
+  refund_method: string;
+  reason?: string;
+  items?: POSSaleReturnItem[];
+  created_at?: string;
 }
 
 export function formatOrderNumber(orderIdOrNumber: string | number | undefined, indexFallback: number = 1): string {
@@ -128,10 +308,75 @@ export interface POSUser {
 export interface POSNotification {
   id: string;
   user_id?: string;
-  type: "new_order" | "order_ready" | "order_rejected" | "low_stock" | "info";
+  type: "new_order" | "order_ready" | "order_rejected" | "low_stock" | "shift_closed" | "info";
   message: string;
   read: boolean;
   created_at: string;
+}
+
+// ----------------------------------------
+// SHIFT MANAGEMENT & CASH DRAWER RECONCILIATION
+// ----------------------------------------
+
+export interface POSCashTransaction {
+  id: string;
+  shift_id: string;
+  type: "drop" | "payout" | "add_float" | "sale_cash" | "refund_cash";
+  amount: number;
+  reason: string;
+  performed_by: string;
+  timestamp: string;
+}
+
+export interface POSShiftSummary {
+  starting_cash: number;
+  cash_sales: number;
+  card_sales: number;
+  online_sales: number;
+  total_sales: number;
+  cash_additions: number;
+  cash_drops: number;
+  cash_payouts: number;
+  cash_refunds: number;
+  expected_cash_in_drawer: number;
+  order_count: number;
+}
+
+export interface POSShift {
+  id: string;
+  shift_number: number;
+  cashier_id: string;
+  cashier_name: string;
+  opened_at: string;
+  closed_at: string | null;
+  status: "open" | "closed";
+  starting_cash: number;
+  cash_transactions: POSCashTransaction[];
+  closing_cash_counted: number | null;
+  expected_cash: number | null;
+  variance: number | null;
+  variance_notes: string | null;
+  summary: POSShiftSummary;
+}
+
+// ----------------------------------------
+// AUTOMATED RECIPE INVENTORY DEPLETION
+// ----------------------------------------
+
+export interface POSInventoryDepletionLog {
+  id: string;
+  order_id: string;
+  order_number: number | string;
+  menu_item_id: string;
+  menu_item_name: string;
+  inventory_id: string;
+  inventory_name: string;
+  quantity_deducted: number;
+  unit: string;
+  remaining_stock: number;
+  timestamp: string;
+  is_reversion?: boolean;
+  reversion_reason?: string | null;
 }
 
 export type PizzaSize = "Small" | "Medium" | "Large";
@@ -1630,8 +1875,10 @@ let mockInventory: POSInventoryItem[] = [
 ];
 
 let mockUsers: POSUser[] = [
-  { id: "10000000-0000-0000-0000-000000000001", name: "Admin Manager", email: "admin@saucify", role: "admin", active: true, status: "approved", created_at: new Date().toISOString() },
-  { id: "49ab2c63-78db-49e0-a3fd-919bd787fd5e", name: "Cashier", email: "cashier@saucify", role: "cashier", active: true, status: "approved", created_at: new Date().toISOString() },
+  { id: "10000000-0000-0000-0000-000000000001", name: "Admin Manager", email: "admin@3dotcreatives", role: "admin", active: true, status: "approved", created_at: new Date().toISOString() },
+  { id: "49ab2c63-78db-49e0-a3fd-919bd787fd5e", name: "Cashier", email: "cashier@3dotcreatives", role: "cashier", active: true, status: "approved", created_at: new Date().toISOString() },
+  { id: "10000000-0000-0000-0000-000000000002", name: "Admin Manager", email: "admin@saucify", role: "admin", active: true, status: "approved", created_at: new Date().toISOString() },
+  { id: "49ab2c63-78db-49e0-a3fd-919bd787fd5f", name: "Cashier", email: "cashier@saucify", role: "cashier", active: true, status: "approved", created_at: new Date().toISOString() },
 ];
 
 let mockIngredients: POSMenuItemIngredient[] = [
@@ -5416,18 +5663,31 @@ export async function createPOSOrder(order: {
   waiter_id: string;
   waiter_name: string;
   order_type?: "dine_in" | "takeaway" | "delivery";
+  payment_method?: "cash" | "card" | "qr_online" | "split" | null;
   customer_name?: string | null;
   customer_phone?: string | null;
   delivery_address?: string | null;
   notes?: string | null;
+  subtotal?: number;
+  discount_amount?: number;
+  discount_type?: "percentage" | "flat" | "none";
+  tax?: number;
+  total?: number;
+  mileage?: number;
+  received_amount?: number;
+  change_due?: number;
+  shift_id?: string | null;
   items: { menu_item_id: string; menu_item_name: string; quantity: number; price: number; notes?: string | null }[];
 }): Promise<POSOrder> {
   const orderType = order.order_type || "dine_in";
-  const subtotal = order.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const tax = 0;
-  const total = subtotal + tax;
+  const subtotal = order.subtotal !== undefined ? order.subtotal : order.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const discountAmount = order.discount_amount || 0;
+  const discountType = order.discount_type || "none";
+  const tax = order.tax !== undefined ? order.tax : 0;
+  const total = order.total !== undefined ? order.total : (subtotal + tax);
   const nextNum = mockOrders.length + 1;
   const orderId = (1000 + nextNum).toString();
+  const currentShiftId = order.shift_id || getActiveShiftId();
 
   const newOrder: POSOrder = {
     id: orderId,
@@ -5438,10 +5698,12 @@ export async function createPOSOrder(order: {
     waiter_name: order.waiter_name,
     status: "pending",
     order_type: orderType,
+    payment_method: order.payment_method || "cash",
+    shift_id: currentShiftId,
     subtotal,
     tax,
-    discount_amount: 0,
-    discount_type: "none",
+    discount_amount: discountAmount,
+    discount_type: discountType,
     total,
     customer_name: order.customer_name || null,
     customer_phone: order.customer_phone || null,
@@ -5449,6 +5711,9 @@ export async function createPOSOrder(order: {
     notes: order.notes || null,
     created_at: new Date().toISOString(),
     completed_at: null,
+    mileage: order.mileage,
+    received_amount: order.received_amount,
+    change_due: order.change_due,
     items: order.items.map((item, idx) => ({
       id: `oi_${orderId}_${idx}`,
       order_id: orderId,
@@ -5510,6 +5775,13 @@ export async function createPOSOrder(order: {
     "new_order",
     `New ${orderType.toUpperCase()} Order #${newOrder.id} ${order.table_number ? `(Table ${order.table_number})` : ""}`
   );
+
+  // Automated Recipe Inventory Depletion
+  try {
+    depleteInventoryForOrder(newOrder, false);
+  } catch (e) {
+    console.error("Error depleting inventory for order:", e);
+  }
 
   return newOrder;
 }
@@ -5628,6 +5900,15 @@ export async function updateOrderStatus(
         try {
           await supabase.from("tables").update({ status: "available" }).eq("table_number", mockOrders[idx].table_number);
         } catch (e) {}
+      }
+    }
+
+    // Restore recipe inventory depletion if order cancelled or rejected
+    if (newStatus === "cancelled" || newStatus === "rejected") {
+      try {
+        depleteInventoryForOrder(mockOrders[idx], true, reason || `Order ${newStatus}`);
+      } catch (e) {
+        console.error("Error restoring inventory on cancellation:", e);
       }
     }
 
@@ -5881,12 +6162,12 @@ export async function deletePOSMenuItemIngredient(ingredientId: string): Promise
   return true;
 }
 
-const LOCAL_USERS_KEY = "saucify_registered_users_v2";
+const LOCAL_USERS_KEY = "3dotcreatives_registered_users_v2";
 
 function getStoredLocalUsers(): POSUser[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(LOCAL_USERS_KEY);
+    const raw = localStorage.getItem(LOCAL_USERS_KEY) || localStorage.getItem("saucify_registered_users_v2");
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     return [];
@@ -6033,5 +6314,613 @@ function addNotificationToMock(type: POSNotification["type"], message: string) {
     },
     ...mockNotifications,
   ];
+}
+
+// ----------------------------------------
+// SHIFT MANAGEMENT & CASH DRAWER RECONCILIATION ENGINE
+// ----------------------------------------
+
+const SHIFTS_STORAGE_KEY = "3dotcreatives_pos_shifts_v1";
+const DEPLETION_LOGS_STORAGE_KEY = "3dotcreatives_depletion_logs_v1";
+
+const initialShiftsSeed: POSShift[] = [
+  {
+    id: "shift_demo_open",
+    shift_number: 104,
+    cashier_id: "10000000-0000-0000-0000-000000000005",
+    cashier_name: "Cashier Counter",
+    opened_at: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
+    closed_at: null,
+    status: "open",
+    starting_cash: 5000,
+    cash_transactions: [
+      {
+        id: "ctx_1",
+        shift_id: "shift_demo_open",
+        type: "payout",
+        amount: 450,
+        reason: "Cleaning supplies & dish sponges",
+        performed_by: "Cashier Counter",
+        timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      },
+      {
+        id: "ctx_2",
+        shift_id: "shift_demo_open",
+        type: "drop",
+        amount: 8000,
+        reason: "Mid-day safe drop (Safe Deposit #042)",
+        performed_by: "Cashier Counter",
+        timestamp: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
+      },
+    ],
+    closing_cash_counted: null,
+    expected_cash: null,
+    variance: null,
+    variance_notes: null,
+    summary: {
+      starting_cash: 5000,
+      cash_sales: 12500,
+      card_sales: 6800,
+      online_sales: 3200,
+      total_sales: 22500,
+      cash_additions: 0,
+      cash_drops: 8000,
+      cash_payouts: 450,
+      cash_refunds: 0,
+      expected_cash_in_drawer: 9050,
+      order_count: 14,
+    },
+  },
+  {
+    id: "shift_demo_closed_1",
+    shift_number: 103,
+    cashier_id: "10000000-0000-0000-0000-000000000005",
+    cashier_name: "Zain Ahmed",
+    opened_at: new Date(Date.now() - 28 * 3600 * 1000).toISOString(),
+    closed_at: new Date(Date.now() - 20 * 3600 * 1000).toISOString(),
+    status: "closed",
+    starting_cash: 5000,
+    cash_transactions: [
+      {
+        id: "ctx_prev_1",
+        shift_id: "shift_demo_closed_1",
+        type: "drop",
+        amount: 30000,
+        reason: "Evening safe transfer",
+        performed_by: "Zain Ahmed",
+        timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+      },
+      {
+        id: "ctx_prev_2",
+        shift_id: "shift_demo_closed_1",
+        type: "payout",
+        amount: 600,
+        reason: "Emergency mineral water cartons",
+        performed_by: "Zain Ahmed",
+        timestamp: new Date(Date.now() - 22 * 3600 * 1000).toISOString(),
+      },
+    ],
+    closing_cash_counted: 21350,
+    expected_cash: 21400,
+    variance: -50,
+    variance_notes: "Minor shortage of Rs. 50 due to change roundings in takeaway coins.",
+    summary: {
+      starting_cash: 5000,
+      cash_sales: 47000,
+      card_sales: 22000,
+      online_sales: 9500,
+      total_sales: 78500,
+      cash_additions: 0,
+      cash_drops: 30000,
+      cash_payouts: 600,
+      cash_refunds: 0,
+      expected_cash_in_drawer: 21400,
+      order_count: 42,
+    },
+  },
+  {
+    id: "shift_demo_closed_2",
+    shift_number: 102,
+    cashier_id: "10000000-0000-0000-0000-000000000001",
+    cashier_name: "Hassan Ali",
+    opened_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+    closed_at: new Date(Date.now() - 40 * 3600 * 1000).toISOString(),
+    status: "closed",
+    starting_cash: 5000,
+    cash_transactions: [
+      {
+        id: "ctx_prev_3",
+        shift_id: "shift_demo_closed_2",
+        type: "drop",
+        amount: 25000,
+        reason: "Afternoon bank deposit batch",
+        performed_by: "Hassan Ali",
+        timestamp: new Date(Date.now() - 44 * 3600 * 1000).toISOString(),
+      },
+    ],
+    closing_cash_counted: 18450,
+    expected_cash: 18450,
+    variance: 0,
+    variance_notes: "Exact drawer balance verified and balanced perfectly.",
+    summary: {
+      starting_cash: 5000,
+      cash_sales: 38450,
+      card_sales: 14200,
+      online_sales: 5800,
+      total_sales: 58450,
+      cash_additions: 0,
+      cash_drops: 25000,
+      cash_payouts: 0,
+      cash_refunds: 0,
+      expected_cash_in_drawer: 18450,
+      order_count: 36,
+    },
+  },
+];
+
+let mockShifts: POSShift[] = initialShiftsSeed;
+
+function loadShiftsFromStorage(): POSShift[] {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(SHIFTS_STORAGE_KEY);
+      if (stored) {
+        mockShifts = JSON.parse(stored);
+        return mockShifts;
+      }
+    } catch (e) {}
+  }
+  return mockShifts;
+}
+
+function saveShiftsToStorage() {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(SHIFTS_STORAGE_KEY, JSON.stringify(mockShifts));
+    } catch (e) {}
+  }
+}
+
+if (typeof window !== "undefined") {
+  loadShiftsFromStorage();
+}
+
+export function getActiveShiftId(): string | null {
+  loadShiftsFromStorage();
+  const current = mockShifts.find(s => s.status === "open");
+  return current ? current.id : null;
+}
+
+export async function getCurrentShift(cashierId?: string): Promise<POSShift | null> {
+  loadShiftsFromStorage();
+  const openShift = mockShifts.find(s => {
+    if (s.status !== "open") return false;
+    if (cashierId) return s.cashier_id === cashierId || s.cashier_name === cashierId;
+    return true;
+  });
+  if (openShift) {
+    openShift.summary = calculateShiftSummary(openShift);
+  }
+  return openShift || null;
+}
+
+export async function getShiftHistory(): Promise<POSShift[]> {
+  loadShiftsFromStorage();
+  return [...mockShifts].sort((a, b) => new Date(b.opened_at).getTime() - new Date(a.opened_at).getTime());
+}
+
+export async function getShiftById(shiftId: string): Promise<POSShift | null> {
+  loadShiftsFromStorage();
+  const shift = mockShifts.find(s => s.id === shiftId);
+  if (shift && shift.status === "open") {
+    shift.summary = calculateShiftSummary(shift);
+  }
+  return shift || null;
+}
+
+export async function openShift(
+  cashierId: string,
+  cashierName: string,
+  startingFloat: number
+): Promise<POSShift> {
+  loadShiftsFromStorage();
+  const existing = mockShifts.find(s => s.status === "open");
+  if (existing) {
+    await closeShift(existing.id, existing.summary.expected_cash_in_drawer, "Auto-closed for new shift handover");
+  }
+
+  const nextNumber = mockShifts.length > 0 ? Math.max(...mockShifts.map(s => s.shift_number || 100)) + 1 : 101;
+  const newShift: POSShift = {
+    id: `shift_${Date.now()}`,
+    shift_number: nextNumber,
+    cashier_id: cashierId,
+    cashier_name: cashierName,
+    opened_at: new Date().toISOString(),
+    closed_at: null,
+    status: "open",
+    starting_cash: Math.max(0, startingFloat),
+    cash_transactions: [],
+    closing_cash_counted: null,
+    expected_cash: null,
+    variance: null,
+    variance_notes: null,
+    summary: {
+      starting_cash: Math.max(0, startingFloat),
+      cash_sales: 0,
+      card_sales: 0,
+      online_sales: 0,
+      total_sales: 0,
+      cash_additions: 0,
+      cash_drops: 0,
+      cash_payouts: 0,
+      cash_refunds: 0,
+      expected_cash_in_drawer: Math.max(0, startingFloat),
+      order_count: 0,
+    },
+  };
+
+  mockShifts.unshift(newShift);
+  saveShiftsToStorage();
+  addNotificationToMock(
+    "info",
+    `Shift #${newShift.shift_number} opened by ${cashierName} with Rs. ${startingFloat.toLocaleString()} float.`
+  );
+  return newShift;
+}
+
+export async function recordCashTransaction(
+  shiftId: string,
+  type: "drop" | "payout" | "add_float",
+  amount: number,
+  reason: string,
+  performedBy: string
+): Promise<POSCashTransaction> {
+  loadShiftsFromStorage();
+  const shift = mockShifts.find(s => s.id === shiftId);
+  if (!shift) throw new Error("Shift not found");
+
+  const tx: POSCashTransaction = {
+    id: `ctx_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    shift_id: shiftId,
+    type,
+    amount: Math.abs(amount),
+    reason: reason.trim(),
+    performed_by: performedBy,
+    timestamp: new Date().toISOString(),
+  };
+
+  shift.cash_transactions.push(tx);
+  shift.summary = calculateShiftSummary(shift);
+  saveShiftsToStorage();
+
+  const typeLabel = type === "drop" ? "Cash Drop (Safe Transfer)" : type === "payout" ? "Petty Cash Payout" : "Added Float";
+  addNotificationToMock(
+    "info",
+    `${typeLabel} of Rs. ${amount.toLocaleString()} recorded in Shift #${shift.shift_number}: ${reason}`
+  );
+
+  return tx;
+}
+
+export function calculateShiftSummary(shift: POSShift): POSShiftSummary {
+  const shiftOrders = mockOrders.filter(o => {
+    if (o.shift_id === shift.id) return true;
+    if (!shift.closed_at) {
+      return new Date(o.created_at) >= new Date(shift.opened_at);
+    }
+    return (
+      new Date(o.created_at) >= new Date(shift.opened_at) &&
+      new Date(o.created_at) <= new Date(shift.closed_at)
+    );
+  });
+
+  let cashSales = 0;
+  let cardSales = 0;
+  let onlineSales = 0;
+  let totalSales = 0;
+  let cashRefunds = 0;
+
+  for (const o of shiftOrders) {
+    if (o.status === "cancelled" || o.status === "rejected") {
+      continue;
+    }
+    const orderTotal = o.total || 0;
+    totalSales += orderTotal;
+    const method = o.payment_method || "cash";
+    if (method === "cash") {
+      cashSales += orderTotal;
+    } else if (method === "card") {
+      cardSales += orderTotal;
+    } else {
+      onlineSales += orderTotal;
+    }
+  }
+
+  let cashAdditions = 0;
+  let cashDrops = 0;
+  let cashPayouts = 0;
+
+  for (const tx of shift.cash_transactions) {
+    if (tx.type === "add_float") cashAdditions += tx.amount;
+    else if (tx.type === "drop") cashDrops += tx.amount;
+    else if (tx.type === "payout") cashPayouts += tx.amount;
+    else if (tx.type === "refund_cash") cashRefunds += tx.amount;
+  }
+
+  const expectedCash = shift.starting_cash + cashSales + cashAdditions - cashDrops - cashPayouts - cashRefunds;
+
+  return {
+    starting_cash: shift.starting_cash,
+    cash_sales: cashSales,
+    card_sales: cardSales,
+    online_sales: onlineSales,
+    total_sales: totalSales,
+    cash_additions: cashAdditions,
+    cash_drops: cashDrops,
+    cash_payouts: cashPayouts,
+    cash_refunds: cashRefunds,
+    expected_cash_in_drawer: Math.max(0, expectedCash),
+    order_count: shiftOrders.length,
+  };
+}
+
+export async function getShiftLiveSummary(shiftId: string): Promise<POSShiftSummary> {
+  loadShiftsFromStorage();
+  const shift = mockShifts.find(s => s.id === shiftId);
+  if (!shift) {
+    return {
+      starting_cash: 0,
+      cash_sales: 0,
+      card_sales: 0,
+      online_sales: 0,
+      total_sales: 0,
+      cash_additions: 0,
+      cash_drops: 0,
+      cash_payouts: 0,
+      cash_refunds: 0,
+      expected_cash_in_drawer: 0,
+      order_count: 0,
+    };
+  }
+  return calculateShiftSummary(shift);
+}
+
+export async function closeShift(
+  shiftId: string,
+  countedCash: number,
+  notes?: string
+): Promise<POSShift> {
+  loadShiftsFromStorage();
+  const shift = mockShifts.find(s => s.id === shiftId);
+  if (!shift) throw new Error("Shift not found");
+
+  const summary = calculateShiftSummary(shift);
+  const variance = countedCash - summary.expected_cash_in_drawer;
+
+  shift.status = "closed";
+  shift.closed_at = new Date().toISOString();
+  shift.closing_cash_counted = countedCash;
+  shift.expected_cash = summary.expected_cash_in_drawer;
+  shift.variance = variance;
+  shift.variance_notes = notes || null;
+  shift.summary = summary;
+
+  saveShiftsToStorage();
+  addNotificationToMock(
+    "shift_closed",
+    `Shift #${shift.shift_number} closed by ${shift.cashier_name}. Counted: Rs. ${countedCash.toLocaleString()} | Variance: Rs. ${variance >= 0 ? "+" : ""}${variance.toLocaleString()}`
+  );
+
+  return shift;
+}
+
+// ----------------------------------------
+// AUTOMATED RECIPE INVENTORY DEPLETION ENGINE
+// ----------------------------------------
+
+const initialDepletionsSeed: POSInventoryDepletionLog[] = [
+  {
+    id: "depl_seed_1",
+    order_id: "1002",
+    order_number: "0000002",
+    menu_item_id: "f0000000-0000-0000-0000-000000000001",
+    menu_item_name: "Classic Zinger Burger",
+    inventory_id: "e0000000-0000-0000-0000-00000000000a",
+    inventory_name: "Burger bun (BUN)",
+    quantity_deducted: 2,
+    unit: "pcs",
+    remaining_stock: 48,
+    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    is_reversion: false,
+  },
+  {
+    id: "depl_seed_2",
+    order_id: "1002",
+    order_number: "0000002",
+    menu_item_id: "f0000000-0000-0000-0000-000000000001",
+    menu_item_name: "Classic Zinger Burger",
+    inventory_id: "e0000000-0000-0000-0000-000000000006",
+    inventory_name: "Ready-made chicken patty (CHK_PATTY)",
+    quantity_deducted: 2,
+    unit: "pcs",
+    remaining_stock: 38,
+    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    is_reversion: false,
+  },
+  {
+    id: "depl_seed_3",
+    order_id: "1002",
+    order_number: "0000002",
+    menu_item_id: "f0000000-0000-0000-0000-000000000001",
+    menu_item_name: "Classic Zinger Burger",
+    inventory_id: "e0000000-0000-0000-0000-00000000000b",
+    inventory_name: "Mayo Garlic Sauce (SAUCE_MAYO_GARLIC)",
+    quantity_deducted: 40,
+    unit: "ml",
+    remaining_stock: 4850,
+    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    is_reversion: false,
+  },
+  {
+    id: "depl_seed_4",
+    order_id: "1001",
+    order_number: "0000001",
+    menu_item_id: "f0000000-0000-0000-0000-000000000002",
+    menu_item_name: "Chicken Tikka Pizza (Medium)",
+    inventory_id: "e0000000-0000-0000-0000-000000000001",
+    inventory_name: "Chicken boneless raw (CHK_RAW)",
+    quantity_deducted: 180,
+    unit: "g",
+    remaining_stock: 14820,
+    timestamp: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
+    is_reversion: false,
+  },
+  {
+    id: "depl_seed_5",
+    order_id: "1001",
+    order_number: "0000001",
+    menu_item_id: "f0000000-0000-0000-0000-000000000002",
+    menu_item_name: "Chicken Tikka Pizza (Medium)",
+    inventory_id: "e0000000-0000-0000-0000-000000000004",
+    inventory_name: "Mozzarella cheese (CHZ_MOZZ)",
+    quantity_deducted: 150,
+    unit: "g",
+    remaining_stock: 7850,
+    timestamp: new Date(Date.now() - 110 * 60 * 1000).toISOString(),
+    is_reversion: false,
+  },
+];
+
+let mockDepletionLogs: POSInventoryDepletionLog[] = initialDepletionsSeed;
+
+function loadDepletionLogsFromStorage(): POSInventoryDepletionLog[] {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(DEPLETION_LOGS_STORAGE_KEY);
+      if (stored) {
+        mockDepletionLogs = JSON.parse(stored);
+        return mockDepletionLogs;
+      }
+    } catch (e) {}
+  }
+  return mockDepletionLogs;
+}
+
+function saveDepletionLogsToStorage() {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(DEPLETION_LOGS_STORAGE_KEY, JSON.stringify(mockDepletionLogs));
+    } catch (e) {}
+  }
+}
+
+export async function getInventoryDepletionLogs(): Promise<POSInventoryDepletionLog[]> {
+  loadDepletionLogsFromStorage();
+  return [...mockDepletionLogs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
+export async function depleteInventoryForOrder(
+  order: POSOrder,
+  isReversion: boolean = false,
+  reason?: string
+): Promise<POSInventoryDepletionLog[]> {
+  if (!order || !order.items || order.items.length === 0) return [];
+  loadDepletionLogsFromStorage();
+
+  const createdLogs: POSInventoryDepletionLog[] = [];
+  const now = new Date().toISOString();
+
+  for (const item of order.items) {
+    const rawId = item.menu_item_id && item.menu_item_id.includes("_")
+      ? item.menu_item_id.split("_")[0]
+      : item.menu_item_id;
+
+    const matchedIngredients = mockIngredients.filter(
+      ing => ing.menu_item_id === rawId || ing.menu_item_id === item.menu_item_id
+    );
+
+    for (const ing of matchedIngredients) {
+      const invItem = mockInventory.find(i => i.id === ing.inventory_id);
+      if (!invItem) continue;
+
+      const totalDeduction = Number((ing.quantity_required * item.quantity).toFixed(2));
+      if (isReversion) {
+        invItem.quantity = Number((invItem.quantity + totalDeduction).toFixed(2));
+      } else {
+        invItem.quantity = Math.max(0, Number((invItem.quantity - totalDeduction).toFixed(2)));
+      }
+      invItem.updated_at = now;
+
+      invItem.status = invItem.quantity <= invItem.minimum_quantity
+        ? "critical"
+        : invItem.quantity <= invItem.minimum_quantity * 2
+        ? "low"
+        : "in_stock";
+
+      const log: POSInventoryDepletionLog = {
+        id: `depl_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        order_id: order.id,
+        order_number: order.order_number || order.id,
+        menu_item_id: item.menu_item_id,
+        menu_item_name: item.menu_item_name || "Ordered Item",
+        inventory_id: invItem.id,
+        inventory_name: invItem.name,
+        quantity_deducted: isReversion ? -totalDeduction : totalDeduction,
+        unit: ing.unit || invItem.unit,
+        remaining_stock: invItem.quantity,
+        timestamp: now,
+        is_reversion: isReversion,
+        reversion_reason: reason || null,
+      };
+
+      createdLogs.push(log);
+      mockDepletionLogs.unshift(log);
+
+      if (!isReversion && (invItem.status === "low" || invItem.status === "critical")) {
+        addNotificationToMock(
+          "low_stock",
+          `Low Ingredient Alert: ${invItem.name} has only ${invItem.quantity} ${invItem.unit} remaining (Min Threshold: ${invItem.minimum_quantity})`
+        );
+      }
+    }
+  }
+
+  saveDepletionLogsToStorage();
+  return createdLogs;
+}
+
+export function getMenuItemPortionAvailability(menuItemId: string): {
+  isAvailable: boolean;
+  portionsAvailable: number;
+  limitingIngredient?: string;
+} {
+  const rawId = menuItemId.includes("_") ? menuItemId.split("_")[0] : menuItemId;
+  const ingredients = mockIngredients.filter(
+    ing => ing.menu_item_id === rawId || ing.menu_item_id === menuItemId
+  );
+  if (ingredients.length === 0) {
+    return { isAvailable: true, portionsAvailable: 999 };
+  }
+
+  let minPortions = Infinity;
+  let limiting: string | undefined = undefined;
+
+  for (const ing of ingredients) {
+    const inv = mockInventory.find(i => i.id === ing.inventory_id);
+    if (!inv || ing.quantity_required <= 0) continue;
+    const portions = Math.floor(inv.quantity / ing.quantity_required);
+    if (portions < minPortions) {
+      minPortions = portions;
+      limiting = inv.name;
+    }
+  }
+
+  if (minPortions === Infinity) minPortions = 999;
+
+  return {
+    isAvailable: minPortions > 0,
+    portionsAvailable: Math.max(0, minPortions),
+    limitingIngredient: limiting,
+  };
 }
 

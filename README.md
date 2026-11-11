@@ -1,4 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 3Dot Creatives POS & Restaurant Management System
+
+An ultra-responsive, offline-first Point of Sale (POS) and Restaurant Management ecosystem engineered for **3Dot Creatives** ([3dotcreatives.agency](https://3dotcreatives.agency)).
+
+## Brand Identity & Aesthetic
+- **Brand**: 3Dot Creatives
+- **Color Palette**:
+  - `Obsidian Forest`: `#0d0f0c` (Deep dark background)
+  - `Card Surface`: `#171b13` (Sleek container surfaces)
+  - `Cream`: `#fdf6e3` (Primary text & typography)
+  - `Beige`: `#d8c3a5` (Secondary & muted typography)
+  - `Rust Gold`: `#c87740` (Primary brand accent, buttons & highlights)
+  - `Olive Green`: `#59613b` (Secondary accents & borders)
+
+## Roles & Interfaces
+1. **Admin Management Suite** (`/admin/dashboard`): Real-time sales ledger, purchasing bills, inventory stocks, recipe costing, staff approvals, and 9 analytical reports.
+2. **Cashier Terminal** (`/cashier/pos`, `/cashier/dashboard`): High-speed barcode scanning, keyboard hotkeys (F1-F12, Alt+shortcuts), held carts, split bills, and thermal receipt printing.
+3. **Kitchen Display System (KDS)** (`/kitchen/dashboard`): Live order tickets, preparation timer badges, audio chimes, and KOT dispatch printing.
+4. **Waiter Floor App** (`/waiter/dashboard`, `/waiter/orders`): Table management, mobile cart creation, and status monitoring.
+5. **Rider App** (`/rider/dashboard`): Delivery queue, direct customer WhatsApp dispatch notifications, and proof-of-delivery updates.
 
 ## Getting Started
 
@@ -6,31 +25,16 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to launch the POS portal.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Desktop App (Electron)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Run local desktop app
+npm run desktop:dev
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Build distributable installer
+npm run desktop:dist
+```

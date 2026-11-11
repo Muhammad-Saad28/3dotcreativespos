@@ -294,7 +294,7 @@ export default function AdminStaffPage() {
           <Input
             label="Email Address"
             type="email"
-            placeholder="tariq@saucify.pk"
+            placeholder="staff@3dotcreatives.agency"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
           />
@@ -305,7 +305,7 @@ export default function AdminStaffPage() {
             <select
               value={newRole}
               onChange={(e) => setNewRole(e.target.value as "admin" | "waiter" | "kitchen" | "cashier" | "rider")}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full glass-surface-card rounded-xl px-3 py-2.5 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="waiter">Waiter</option>
               <option value="kitchen">Kitchen Staff</option>
@@ -328,3 +328,4 @@ export default function AdminStaffPage() {
     </div>
   );
 }
+

@@ -14,8 +14,10 @@ export interface UserSession {
 
 // System Registered Credentials Mapping (Fresh Start: Only Master Administrator)
 export const SYSTEM_USERS: { email: string; password: string; role: "admin" | "waiter" | "kitchen" | "cashier" | "rider"; name: string; id: string }[] = [
-  { id: "10000000-0000-0000-0000-000000000001", email: "admin@saucify", password: "admin123", role: "admin", name: "Admin Manager" },
-  { id: "49ab2c63-78db-49e0-a3fd-919bd787fd5e", email: "cashier@saucify", password: "cashier123", role: "cashier", name: "Cashier" },
+  { id: "10000000-0000-0000-0000-000000000001", email: "admin@3dotcreatives", password: "admin123", role: "admin", name: "Admin Manager" },
+  { id: "49ab2c63-78db-49e0-a3fd-919bd787fd5e", email: "cashier@3dotcreatives", password: "cashier123", role: "cashier", name: "Cashier" },
+  { id: "10000000-0000-0000-0000-000000000002", email: "admin@saucify", password: "admin123", role: "admin", name: "Admin Manager" },
+  { id: "49ab2c63-78db-49e0-a3fd-919bd787fd5f", email: "cashier@saucify", password: "cashier123", role: "cashier", name: "Cashier" },
 ];
 
 export function useAuth() {
@@ -171,7 +173,7 @@ export function useAuth() {
 
     // 3. System & Locally Registered Credentials Matching
     const allRegisteredUsers = typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("saucify_registered_users") || localStorage.getItem("swiftbite_registered_users") || "[]")
+      ? JSON.parse(localStorage.getItem("3dotcreatives_registered_users") || localStorage.getItem("saucify_registered_users") || localStorage.getItem("swiftbite_registered_users") || "[]")
       : [];
 
     const localMatch = allRegisteredUsers.find(

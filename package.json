@@ -1,5 +1,5 @@
 {
-  "name": "saucify-pos",
+  "name": "3dotcreatives-pos",
   "version": "1.0.0",
   "private": true,
   "main": "electron-main.js",
@@ -13,8 +13,8 @@
     "desktop:dist": "next build && electron-builder"
   },
   "build": {
-    "appId": "com.saucify.restaurant",
-    "productName": "Saucify Restaurant Software",
+    "appId": "com.3dotcreatives.pos",
+    "productName": "3Dot Creatives POS Software",
     "directories": {
       "output": "dist-desktop"
     },

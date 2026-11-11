@@ -283,7 +283,7 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
           <div className="text-center space-y-1.5 pb-3">
             <div>
               <h2 className="text-2xl font-black tracking-tight text-black uppercase font-sans">
-                SAUCIFY
+                3DOT CREATIVES
               </h2>
               <p className="text-xs font-black text-black tracking-wider uppercase mt-0.5">
                 Creative &bull; Modern &bull; Food-Focused
@@ -291,8 +291,8 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
             </div>
 
             <div className="text-xs text-black leading-snug space-y-0.5 pt-0.5 font-bold">
-              <p>Bismillah Scheme, Lahore</p>
-              <p>Phone: +92 300 0000000 &bull; info@saucify.pk</p>
+              <p>Lahore, Pakistan</p>
+              <p>Phone: +92 305 228 8882 &bull; info@3dotcreatives.agency</p>
             </div>
           </div>
 
@@ -428,7 +428,7 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
           {/* Footer Greeting - Clean without barcode and without paid by */}
           <div className="pt-2 pb-0.5 text-center space-y-0.5 mt-2">
             <div className="text-xs sm:text-sm text-black space-y-0.5 font-black">
-              <p className="font-black text-black text-sm sm:text-base">Thank you for dining with Saucify!</p>
+              <p className="font-black text-black text-sm sm:text-base">Thank you for dining with 3Dot Creatives!</p>
               <p className="text-[11px] sm:text-xs font-black">We hope to serve you again soon &bull; Have a wonderful day</p>
             </div>
           </div>
@@ -443,7 +443,7 @@ export function ReceiptModal({ isOpen, onClose, order }: ReceiptModalProps) {
           <Button
             size="sm"
             onClick={handlePrint}
-            className="bg-[#FF6B00] hover:bg-[#FF852E] text-white font-bold flex items-center space-x-1.5 shadow-md shadow-[#FF6B00]/25 text-xs"
+            className="bg-[#c87740] hover:bg-[#d9854d] text-white font-bold flex items-center space-x-1.5 shadow-md shadow-[#c87740]/25 text-xs"
           >
             <Printer className="h-4 w-4" />
             <span>Print Receipt</span>

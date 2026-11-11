@@ -40,7 +40,7 @@ export default function RiderDashboardPage() {
     return {
       id: "45c4adc6-62aa-42ac-b081-859d94273753",
       name: "Zubair Rider",
-      email: "rider@saucify",
+      email: "rider@3dotcreatives",
       role: "rider" as const
     };
   }, [user]);
@@ -264,7 +264,7 @@ export default function RiderDashboardPage() {
               ? order.customer_phone.replace(/^0/, "92").replace(/[^0-9]/g, "")
               : null;
             const customerWaMsg = encodeURIComponent(
-              `Hello ${order.customer_name || "Customer"}, your Saucify delivery rider (${activeRider.name}) is on the way with your Order ${shortOrderRef}!`
+              `Hello ${order.customer_name || "Customer"}, your 3Dot Creatives delivery rider (${activeRider.name}) is on the way with your Order ${shortOrderRef}!`
             );
 
             return (
