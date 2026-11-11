@@ -33,6 +33,8 @@ export function useAuth() {
       const storedStatus = (localStorage.getItem("userStatus") || "approved") as "pending" | "approved" | "rejected";
 
       if (storedRole && storedEmail) {
+        document.cookie = `pos_user_role=${storedRole}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = `pos_user_email=${encodeURIComponent(storedEmail)}; path=/; max-age=604800; SameSite=Lax`;
         setUser({
           id: storedId || "u_user",
           name: storedName || "Staff Member",
@@ -41,6 +43,8 @@ export function useAuth() {
           status: storedStatus,
         });
       } else {
+        document.cookie = "pos_user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie = "pos_user_email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         setUser(null);
       }
     }
@@ -63,6 +67,11 @@ export function useAuth() {
         localStorage.setItem("userName", name);
         localStorage.setItem("userId", id);
         localStorage.setItem("userStatus", status);
+
+        if (typeof document !== "undefined") {
+          document.cookie = `pos_user_role=${role}; path=/; max-age=604800; SameSite=Lax`;
+          document.cookie = `pos_user_email=${encodeURIComponent(email)}; path=/; max-age=604800; SameSite=Lax`;
+        }
 
         setUser({ id, name, email, role, status });
       }
@@ -165,6 +174,12 @@ export function useAuth() {
         localStorage.setItem("userName", name);
         localStorage.setItem("userId", data.user.id);
         localStorage.setItem("userStatus", "approved");
+
+        if (typeof document !== "undefined") {
+          document.cookie = `pos_user_role=${role}; path=/; max-age=604800; SameSite=Lax`;
+          document.cookie = `pos_user_email=${encodeURIComponent(cleanEmail)}; path=/; max-age=604800; SameSite=Lax`;
+        }
+
         setUser({ id: data.user.id, name, email: cleanEmail, role, status: "approved" });
         setLoading(false);
         return { role, status: "approved" };
@@ -201,6 +216,11 @@ export function useAuth() {
       localStorage.setItem("userId", localMatch.id);
       localStorage.setItem("userStatus", localMatch.status);
 
+      if (typeof document !== "undefined") {
+        document.cookie = `pos_user_role=${localMatch.role}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = `pos_user_email=${encodeURIComponent(localMatch.email)}; path=/; max-age=604800; SameSite=Lax`;
+      }
+
       setUser({ id: localMatch.id, name: localMatch.name, email: localMatch.email, role: localMatch.role, status: localMatch.status });
       setLoading(false);
       return { role: localMatch.role, status: localMatch.status };
@@ -223,6 +243,11 @@ export function useAuth() {
       localStorage.setItem("userName", matchedUser.name);
       localStorage.setItem("userId", matchedUser.id);
       localStorage.setItem("userStatus", "approved");
+
+      if (typeof document !== "undefined") {
+        document.cookie = `pos_user_role=${matchedUser.role}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = `pos_user_email=${encodeURIComponent(matchedUser.email)}; path=/; max-age=604800; SameSite=Lax`;
+      }
 
       setUser({ id: matchedUser.id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, status: "approved" });
       setLoading(false);
@@ -286,6 +311,10 @@ export function useAuth() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userId");
     localStorage.removeItem("userStatus");
+    if (typeof document !== "undefined") {
+      document.cookie = "pos_user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "pos_user_email=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
     setUser(null);
   }, []);
 
